@@ -46,13 +46,16 @@ def load_history():
         sheet = connect_to_sheets()
         data = sheet.get_all_records()
         
-        # Validasi: Pastikan data benar-benar list dan bukan string
+        # --- DEBUGGING SECTION ---
+        st.write(f"DEBUG: Tipe data 'data': {type(data)}")
+        st.write(f"DEBUG: Isi 'data' (5 item pertama): {data[:5]}")
+        # -------------------------
+        
+        # Coba proses data
         if isinstance(data, list):
-            history = {row["Key"]: int(row["Stock"]) for row in data}
-            st.info(f"Berhasil memuat {len(history)} data.")
-            return history
+            return {row["Key"]: int(row["Stock"]) for row in data}
         else:
-            st.error("Format data dari Sheets tidak valid.")
+            st.error("Data dari Sheet bukan list!")
             return {}
             
     except Exception as e:
