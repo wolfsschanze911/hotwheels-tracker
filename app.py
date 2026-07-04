@@ -32,7 +32,7 @@ def load_history():
         # Mulai loop dari baris index 1 (melewati header di index 0)
         for row in all_rows[1:]:
             if len(row) >= 2: # Pastikan ada kolom Key dan Stock
-                key = row[0]
+                key = row[1]
                 stock = row[1]
                 try:
                     # Pastikan kita ambil angka
