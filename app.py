@@ -26,7 +26,7 @@ def connect_to_sheets():
     client = gspread.authorize(creds)
     return client.open("HotWheelsDB").sheet1
 
-# --- PERBAIKAN HANYA DI BAGIAN INI ---
+# --- PERBAIKAN: Sesuaikan dengan Header di image_bc9b2a.png ---
 def load_history():
     try:
         sheet = connect_to_sheets()
@@ -34,9 +34,10 @@ def load_history():
         
         history = {}
         for row in data:
-            # Perbaikan: Memastikan row adalah dictionary sebelum mengaksesnya
+            # Memastikan row adalah dictionary agar tidak kena error 'str'
             if isinstance(row, dict):
-                key = row.get("key") # Menggunakan "key" (sesuai screenshot Anda)
+                # Harus menggunakan "Key" dan "Stock" (huruf kapital sesuai screenshot)
+                key = row.get("Key") 
                 stock = row.get("Stock")
                 if key:
                     history[str(key)] = int(stock) if stock else 0
@@ -45,13 +46,13 @@ def load_history():
     except Exception as e:
         st.error(f"Error pada load_history: {e}")
         return {}
-# -------------------------------------
 
 def save_history(history):
     try:
         sheet = connect_to_sheets()
         rows = [[key, val] for key, val in history.items()]
-        data_to_write = [["key", "Stock"]] + rows
+        # Harus menggunakan "Key" dan "Stock" (sesuai screenshot)
+        data_to_write = [["Key", "Stock"]] + rows
         sheet.clear()
         sheet.append_rows(data_to_write)
     except Exception as e:
