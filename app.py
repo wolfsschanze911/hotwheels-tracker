@@ -77,7 +77,7 @@ st.set_page_config(page_title="Hot Wheels Tracker", layout="wide")
 st.title("🚗 Alfagift Hotwheels Live Tracker")
 
 # Baris 83:
-    for i, toko in enumerate(daftar_toko_depok):
+for i, toko in enumerate(daftar_toko_depok):
         
         # BARIS 85 KE BAWAH HARUS MASUK KE KANAN SEPERTI INI:
         headers_toko = HEADERS.copy()
