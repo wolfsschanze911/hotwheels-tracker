@@ -11,9 +11,19 @@ def send_telegram_msg(message):
         chat_id = st.secrets["TELEGRAM_CHAT_ID"]
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
-        requests.post(url, data=payload, timeout=5)
+        
+        # Kirim request dan cek status
+        response = requests.post(url, data=payload, timeout=5)
+        
+        # Ini akan menampilkan error di layar jika gagal
+        if response.status_code != 200:
+            st.error(f"Telegram gagal kirim: {response.text}")
+        else:
+            st.success("Notifikasi terkirim!")
+            
     except Exception as e:
-        st.error(f"Gagal kirim notifikasi: {e}")
+        # Ini akan menampilkan error teknis
+        st.error(f"Error teknis Telegram: {e}")
 
 # 1. Koneksi ke Google Sheets menggunakan Secrets
 def connect_to_sheets():
