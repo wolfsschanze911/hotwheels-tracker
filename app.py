@@ -1,62 +1,37 @@
-import pandas as pd
 import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
-import requests 
-import urllib.parse 
-import time
+import requests
+import urllib.parse
 
-def  send_telegram_msg(message):
-    try:
-        token = st.secrets["TELEGRAM_TOKEN"]
-        chat_id = st.secrets["TELEGRAM_CHAT_ID"]
-        url = f"https://api.telegram.org/bot{token}/sendMessage"
-        payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
-        requests.post(url, data=payload, timeout=5)
-    except Exception as e:
-        st.error(f"Gagal kirim notifikasi: {e}")
-
+# 1. Koneksi Sheet (Sama dengan sebelumnya)
 def connect_to_sheets():
     creds_dict = st.secrets["gcp_service_account"]
-    scopes = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive"
-    ]
+    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
     creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     client = gspread.authorize(creds)
     return client.open("HotWheelsDB").sheet1
 
-# --- PERBAIKAN: Sesuaikan dengan Header di image_bc9b2a.png ---
+# 2. Baca Database (Paling AMAN)
 def load_history():
     try:
         sheet = connect_to_sheets()
-        data = sheet.get_all_records()
-        
+        rows = sheet.get_all_values() # Mengambil list of lists (bukan dictionary)
         history = {}
-        for row in data:
-            # Memastikan row adalah dictionary agar tidak kena error 'str'
-            if isinstance(row, dict):
-                # Harus menggunakan "Key" dan "Stock" (huruf kapital sesuai screenshot)
-                key = row.get("Key") 
-                stock = row.get("Stock")
-                if key:
-                    history[str(key)] = int(stock) if stock else 0
+        if len(rows) > 1:
+            for row in rows[1:]: # Lewati header
+                if len(row) >= 2:
+                    history[row[0]] = int(row[1])
         return history
-            
-    except Exception as e:
-        st.error(f"Error pada load_history: {e}")
+    except:
         return {}
 
+# 3. Simpan Database
 def save_history(history):
-    try:
-        sheet = connect_to_sheets()
-        rows = [[key, val] for key, val in history.items()]
-        # Harus menggunakan "Key" dan "Stock" (sesuai screenshot)
-        data_to_write = [["Key", "Stock"]] + rows
-        sheet.clear()
-        sheet.append_rows(data_to_write)
-    except Exception as e:
-        st.error(f"Gagal menyimpan history: {e}")
+    sheet = connect_to_sheets()
+    sheet.clear()
+    data = [["Key", "Stock"]] + [[k, v] for k, v in history.items()]
+    sheet.append_rows(data)
 
 # --- KONFIGURASI TOKO & HEADERS ---
 daftar_toko_depok = [
