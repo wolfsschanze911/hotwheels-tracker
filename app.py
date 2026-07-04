@@ -5,89 +5,55 @@ from google.oauth2.service_account import Credentials
 import requests 
 import urllib.parse 
 import time
-import requests 
-import json # Sesuaikan dengan library request yang Anda pakai
 
+# --- FUNGSI UTAMA ---
 def send_telegram_msg(message):
     try:
         token = st.secrets["TELEGRAM_TOKEN"]
         chat_id = st.secrets["TELEGRAM_CHAT_ID"]
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
-        
-        # Kirim request dan cek status
-        response = requests.post(url, data=payload, timeout=5)
-        
-        # Ini akan menampilkan error di layar jika gagal
-        if response.status_code != 200:
-            st.error(f"Telegram gagal kirim: {response.text}")
-        else:
-            st.success("Notifikasi terkirim!")
-            
+        requests.post(url, data=payload, timeout=5)
     except Exception as e:
-        # Ini akan menampilkan error teknis
-        st.error(f"Error teknis Telegram: {e}")
+        st.error(f"Gagal kirim notifikasi: {e}")
 
-# 1. Koneksi ke Google Sheets menggunakan Secrets
 def connect_to_sheets():
     creds_dict = st.secrets["gcp_service_account"]
-    # Scope ini mencakup Spreadsheet dan Drive agar tidak error 403 lagi
-    scopes = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive"
-    ]
+    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
     creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     client = gspread.authorize(creds)
     return client.open("HotWheelsDB").sheet1
 
-# 2. Fungsi Load History dari Sheets
 def load_history():
+    """Memuat data dengan validasi ketat agar tidak crash."""
     try:
         sheet = connect_to_sheets()
-        # Ambil data dari Google Sheets
         data = sheet.get_all_records()
         
-        # --- DEBUGGING SANGAT PENTING ---
-        # Kita cek apa sebenarnya yang diterima Python dari Google Sheets
-        st.write(f"DEBUG: Tipe data yang diterima: {type(data)}")
-        
-        # Jika data bukan list, berarti koneksi atau format sheet salah
+        # Validasi: Pastikan data adalah list (bukan error string)
         if not isinstance(data, list):
-            st.error(f"Error: Data bukan list/tabel! Data yang diterima adalah: {data}")
             return {}
-            
+
         history = {}
         for row in data:
-            # Pastikan setiap baris adalah dictionary (seperti { 'key': '...', 'Stock': 1 })
             if isinstance(row, dict):
-                k = row.get("key") # Sesuai dengan header 'key' di sheet
-                s = row.get("Stock") # Sesuai dengan header 'Stock' di sheet
-                
-                if k is not None:
+                # Sesuai screenshot: header-nya adalah 'key' (lowercase)
+                k = row.get("key") 
+                s = row.get("Stock")
+                if k:
                     history[str(k)] = int(s) if s else 0
-            else:
-                # Jika baris adalah string/teks, kita abaikan (skip)
-                continue
-                
         return history
-            
     except Exception as e:
-        st.error(f"Error pada load_history: {e}")
+        st.warning(f"Info: Belum ada history atau gagal muat. (Error: {e})")
         return {}
-        
-# 3. Fungsi Save History ke Sheets
+
 def save_history(history):
     try:
         sheet = connect_to_sheets()
         rows = [[key, val] for key, val in history.items()]
-        
-        # Buat data baru lengkap dengan header
-        data_to_write = [["Key", "Stock"]] + rows
-        
-        # Hapus isi lama dan tulis langsung semua sekaligus
+        data_to_write = [["key", "Stock"]] + rows # Header lowercase 'key'
         sheet.clear()
         sheet.append_rows(data_to_write)
-        
     except Exception as e:
         st.error(f"Gagal menyimpan history: {e}")
 
@@ -124,98 +90,65 @@ HEADERS = {
 
 url_pencarian = "https://webcommerce-gw.alfagift.id/v2/products/searches?keyword=hot-wheels&start=0&limit=60"
 
+# --- UI STREAMLIT ---
 st.set_page_config(page_title="Hot Wheels Tracker", layout="wide")
 st.title("🚗 Alfagift Hotwheels Live Tracker")
 
-
 if st.button("SCAN SEMUA TOKO"):
-    send_telegram_msg("Bot sudah aktif dan bisa kirim pesan!")
     history = load_history()
+    is_first_run = (len(history) == 0) # Tandai jika ini scan pertama
+    
+    if is_first_run:
+        st.info("Scan pertama terdeteksi. Menyimpan data awal (tanpa notifikasi)...")
+    
     progress_bar = st.progress(0)
-    session = requests.Session()
+    new_history = {} # Kita buat dict baru agar aman
     
     for i, toko in enumerate(daftar_toko_depok):
         try:
-            # 1. Setup headers
+            # Setup headers
             headers_toko = HEADERS.copy()
             headers_toko.update({'storecode': toko['storecode'], 'fccode': toko['fccode']})
             
-            # 2. AMBIL DATA DULU (Penting!)
-            response = requests.get(url_pencarian, headers=headers_toko, timeout=15)
-
-            time.sleep(1)
+            response = requests.get(url_pencarian, headers=headers_toko, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
-                # 3. Definisikan stok_tersedia DI SINI
                 products = data.get("products", []) or data.get("data", {}).get("products", [])
                 stok_tersedia = [p for p in products if p.get("stock", 0) > 0]
             else:
-                stok_tersedia = [] # Kalau gagal, kosongkan saja supaya tidak error
+                stok_tersedia = []
 
-            # 4. Baru tampilkan UI (Tombol Maps & Expander)
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.subheader(f"📍 {toko['nama']}")
-            with col2:
-                url_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote('Alfamart ' + toko['nama'])}"
-                st.link_button("📍 Maps", url=url_maps)
-
-            # Sekarang stok_tersedia sudah ada, jadi expander tidak akan error lagi
-            with st.expander(f"Lihat stok ({len(stok_tersedia)} item ditemukan)"):
-                if stok_tersedia:
-                    list_data = []
-                    for p in stok_tersedia:
-                        nama_produk = p.get("productName", "N/A")
-                        current_stock = p.get("stock", 0)
-                        key = f"{toko['nama']}_{nama_produk}"
-
-                        prev_stock = history.get(key, 0)
-                        diff = current_stock - prev_stock
-                        # --- TAMBAHKAN DEBUG DI BAWAH INI ---
-                        st.write(f"DEBUG: {nama_produk} | Prev: {prev_stock} | Curr: {current_stock}")
-                        # ----------------------------------
-                        
-                        # Logika Status
-                        if prev_stock == 0 and current_stock > 0:
-                            status = "🆕 Baru"
-                            pesan = (f"🚗 <b>STOK BARU DITEMUKAN!</b>\n\n"
-                                     f"📍 <b>Toko:</b> {toko['nama']}\n"
-                                     f"🏎 <b>Produk:</b> {nama_produk}\n"
-                                     f"💰 <b>Harga:</b> Rp {p.get('finalPrice', 0):,.0f}")
-                            send_telegram_msg(pesan)
+            # UI Update
+            st.write(f"### 📍 {toko['nama']} ({len(stok_tersedia)} item)")
             
-                        elif prev_stock > 0 and current_stock == 0:
-                            status = "🔴 Habis (Laku)"
-                            pesan = (f"⚠️ <b>BARANG LAKU!</b>\n\n"
-                                     f"📍 <b>Toko:</b> {toko['nama']}\n"
-                                     f"🏎 <b>Produk:</b> {nama_produk}\n"
-                                     f"📢 <i>Stok telah habis terjual.</i>")
-                            send_telegram_msg(pesan)
-            
-                        elif diff > 0:
-                            status = f"🟢 +{diff}"
-                        elif diff < 0:
-                            status = f"🔴 {diff}"
-                        else:
-                            status = "➖ Tetap"
-                            
-                        history[key] = current_stock
-                        
-                        list_data.append({
-                            "Produk": nama_produk,
-                            "Stok": current_stock,
-                            "Status": status,
-                            "Harga": f"Rp {p.get('finalPrice', 0):,.0f}"
-                        })
-                    st.table(pd.DataFrame(list_data))
-                else:
-                    st.write("Stok kosong.")
-        
+            for p in stok_tersedia:
+                nama_produk = p.get("productName", "N/A")
+                current_stock = p.get("stock", 0)
+                key = f"{toko['nama']}_{nama_produk}"
+                
+                # Simpan ke history baru
+                new_history[key] = current_stock
+                
+                # Cek perubahan (JANGAN kirim notifikasi jika is_first_run)
+                if not is_first_run:
+                    prev_stock = history.get(key, 0)
+                    
+                    if prev_stock == 0 and current_stock > 0:
+                        pesan = f"🆕 <b>BARU:</b> {toko['nama']} | {nama_produk} (Stok: {current_stock})"
+                        send_telegram_msg(pesan)
+                    elif prev_stock > 0 and current_stock == 0:
+                        pesan = f"⚠️ <b>HABIS:</b> {toko['nama']} | {nama_produk}"
+                        send_telegram_msg(pesan)
+
         except Exception as e:
             st.error(f"Error di {toko['nama']}: {e}")
             
         progress_bar.progress((i + 1) / len(daftar_toko_depok))
+            
+    # Simpan hasil akhir ke Sheets
+    save_history(new_history)
+    st.success("Scan selesai! Data telah diperbarui.")
             
     # Save history (Berada di luar for loop)
     save_history(history)
