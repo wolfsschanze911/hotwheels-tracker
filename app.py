@@ -83,17 +83,22 @@ if st.button("SCAN SEMUA TOKO"):
 
     for i, toko in enumerate(daftar_toko_depok):
         try:
-            # Setup headers
+            # 1. Setup headers
             headers_toko = HEADERS.copy()
             headers_toko.update({'storecode': toko['storecode'], 'fccode': toko['fccode']})
             
-            # Tambahkan logika request API Anda di sini (response = requests.get(...))
-            # ... (Pastikan response didefinisikan sebelum stok_tersedia) ...
+            # 2. AMBIL DATA DULU (Penting!)
+            response = requests.get(url_pencarian, headers=headers_toko, timeout=5)
             
-            # (Contoh asumsikan data 'products' sudah diambil dari response)
-            # products = data.get("products", [])
-            # stok_tersedia = [p for p in products if p.get("stock", 0) > 0]
+            if response.status_code == 200:
+                data = response.json()
+                # 3. Definisikan stok_tersedia DI SINI
+                products = data.get("products", []) or data.get("data", {}).get("products", [])
+                stok_tersedia = [p for p in products if p.get("stock", 0) > 0]
+            else:
+                stok_tersedia = [] # Kalau gagal, kosongkan saja supaya tidak error
 
+            # 4. Baru tampilkan UI (Tombol Maps & Expander)
             col1, col2 = st.columns([3, 1])
             with col1:
                 st.subheader(f"📍 {toko['nama']}")
@@ -101,7 +106,8 @@ if st.button("SCAN SEMUA TOKO"):
                 url_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote('Alfamart ' + toko['nama'])}"
                 st.link_button("📍 Maps", url=url_maps)
 
-            with st.expander(f"📍 {toko['nama']} ({len(stok_tersedia)} item ditemukan)"):
+            # Sekarang stok_tersedia sudah ada, jadi expander tidak akan error lagi
+            with st.expander(f"Lihat stok ({len(stok_tersedia)} item ditemukan)"):
                 if stok_tersedia:
                     list_data = []
                     for p in stok_tersedia:
@@ -109,21 +115,15 @@ if st.button("SCAN SEMUA TOKO"):
                         current_stock = p.get("stock", 0)
                         key = f"{toko['nama']}_{nama_produk}"
 
-                        # Cek history
                         prev_stock = history.get(key, 0)
                         diff = current_stock - prev_stock
                             
                         # Logika Status
-                        if prev_stock == 0:
-                            status = "🆕 Baru"
-                        elif diff > 0:
-                            status = f"🟢 +{diff}"
-                        elif diff < 0:
-                            status = f"🔴 {diff}"
-                        else:
-                            status = "➖ Tetap"
+                        if prev_stock == 0: status = "🆕 Baru"
+                        elif diff > 0: status = f"🟢 +{diff}"
+                        elif diff < 0: status = f"🔴 {diff}"
+                        else: status = "➖ Tetap"
                             
-                        # Simpan update ke dictionary history
                         history[key] = current_stock
                         
                         list_data.append({
@@ -132,15 +132,13 @@ if st.button("SCAN SEMUA TOKO"):
                             "Status": status,
                             "Harga": f"Rp {p.get('finalPrice', 0):,.0f}"
                         })
-                    
                     st.table(pd.DataFrame(list_data))
                 else:
                     st.write("Stok kosong.")
-                    
+        
         except Exception as e:
             st.error(f"Error di {toko['nama']}: {e}")
-        
-        # Update progress bar (Berada di dalam loop, tapi di luar blok try-except)
+            
         progress_bar.progress((i + 1) / len(daftar_toko_depok))
             
     # Save history (Berada di luar for loop)
