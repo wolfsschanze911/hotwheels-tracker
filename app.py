@@ -46,14 +46,17 @@ def load_history():
         sheet = connect_to_sheets()
         data = sheet.get_all_records()
         
-        # LOGGING: Tambahkan ini agar Anda tahu berapa banyak data yang terbaca
-        history_data = {row["Key"]: int(row["Stock"]) for row in data}
-        st.info(f"Berhasil memuat {len(history_data)} data dari Google Sheets.") 
-        return history_data
-        
+        # Validasi: Pastikan data benar-benar list dan bukan string
+        if isinstance(data, list):
+            history = {row["Key"]: int(row["Stock"]) for row in data}
+            st.info(f"Berhasil memuat {len(history)} data.")
+            return history
+        else:
+            st.error("Format data dari Sheets tidak valid.")
+            return {}
+            
     except Exception as e:
-        # Jika gagal, beri tahu di UI
-        st.error(f"Gagal memuat history: {e}")
+        st.error(f"Error pada load_history: {e}")
         return {}
 
 # 3. Fungsi Save History ke Sheets
@@ -112,6 +115,9 @@ st.title("🚗 Alfagift Hotwheels Live Tracker")
 if st.button("SCAN SEMUA TOKO"):
     send_telegram_msg("Bot sudah aktif dan bisa kirim pesan!")
     history = load_history()
+    if not history and not st.checkbox("Saya yakin ingin scan (data lama akan terhapus jika tidak ada history)"):
+        st.warning("Data history gagal dimuat atau kosong! Jika dilanjutkan, data lama di Google Sheets mungkin terhapus. Silakan cek koneksi/isi sheet.")
+        st.stop() # Menghentikan bot agar tidak menjalankan scan
     st.write(f"Tipe data history: {type(history)}")
     progress_bar = st.progress(0)
     session = requests.Session()
