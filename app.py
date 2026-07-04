@@ -41,13 +41,18 @@ def connect_to_sheets():
     return client.open("HotWheelsDB").sheet1
 
 # 2. Fungsi Load History dari Sheets
-def load_history():
+ddef load_history():
     try:
         sheet = connect_to_sheets()
         data = sheet.get_all_records()
-        # Tambahkan int() untuk memastikan nilai stok adalah angka
-        return {row["Key"]: int(row["Stock"]) for row in data}
+        
+        # LOGGING: Tambahkan ini agar Anda tahu berapa banyak data yang terbaca
+        history_data = {row["Key"]: int(row["Stock"]) for row in data}
+        st.info(f"Berhasil memuat {len(history_data)} data dari Google Sheets.") 
+        return history_data
+        
     except Exception as e:
+        # Jika gagal, beri tahu di UI
         st.error(f"Gagal memuat history: {e}")
         return {}
 
@@ -55,11 +60,15 @@ def load_history():
 def save_history(history):
     try:
         sheet = connect_to_sheets()
-        sheet.clear()
-        sheet.append_row(["Key", "Stock"])
         rows = [[key, val] for key, val in history.items()]
-        if rows:
-            sheet.append_rows(rows)
+        
+        # Buat data baru lengkap dengan header
+        data_to_write = [["Key", "Stock"]] + rows
+        
+        # Hapus isi lama dan tulis langsung semua sekaligus
+        sheet.clear()
+        sheet.append_rows(data_to_write)
+        
     except Exception as e:
         st.error(f"Gagal menyimpan history: {e}")
 
@@ -145,6 +154,12 @@ if st.button("SCAN SEMUA TOKO"):
 
                         prev_stock = history.get(key, 0)
                         diff = current_stock - prev_stock
+                        # --- TAMBAHKAN DEBUG DI BAWAH INI ---
+                        st.write(f"DEBUG: {nama_produk} | Prev: {prev_stock} | Curr: {current_stock}")
+                        # -----------------------------------
+                        
+                        # Logika Status
+                        if prev_stock == 0 and current_stock > 0:
                             
                         # Logika Status
                         if prev_stock == 0 and current_stock > 0:
