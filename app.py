@@ -2,7 +2,8 @@ import pandas as pd
 import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
-import requests # Sesuaikan dengan library request yang Anda pakai
+import requests 
+import urllib.parse # Sesuaikan dengan library request yang Anda pakai
 
 # 1. Koneksi ke Google Sheets menggunakan Secrets
 def connect_to_sheets():
@@ -80,18 +81,26 @@ if st.button("🚀 SCAN SEMUA TOKO"):
     progress_bar = st.progress(0)
     
     for i, toko in enumerate(daftar_toko_depok):
-        # Setup headers untuk toko ini
-        headers_toko = HEADERS.copy()
-        headers_toko.update({'storecode': toko['storecode'], 'fccode': toko['fccode']})
+    headers_toko = HEADERS.copy()
+    headers_toko.update({'storecode': toko['storecode'], 'fccode': toko['fccode']})
+    
+    try:
+        response = requests.get(url_pencarian, headers=headers_toko, timeout=5)
         
-        try:
-            response = requests.get(url_pencarian, headers=headers_toko, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            products = data.get("products", []) or data.get("data", {}).get("products", [])
+            stok_tersedia = [p for p in products if p.get("stock", 0) > 0]
             
-            if response.status_code == 200:
-                data = response.json()
-                # Sesuaikan dengan struktur JSON API Anda
-                products = data.get("products", []) or data.get("data", {}).get("products", [])
-                stok_tersedia = [p for p in products if p.get("stock", 0) > 0]
+            # --- TOMBOL MAPS OTOMATIS ---
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.subheader(f"📍 {toko['nama']}")
+            with col2:
+                # Ini link otomatis, tidak perlu input manual!
+                url_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote('Alfamart ' + toko['nama'])}"
+                st.link_button("📍 Maps", url=url_maps)
+            # ----------------------------
                 
                 with st.expander(f"📍 {toko['nama']} ({len(stok_tersedia)} item ditemukan)"):
                     if stok_tersedia:
