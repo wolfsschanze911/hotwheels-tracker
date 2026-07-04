@@ -6,12 +6,14 @@ import requests # Sesuaikan dengan library request yang Anda pakai
 
 # 1. Koneksi ke Google Sheets menggunakan Secrets
 def connect_to_sheets():
-    # Ambil data dari Streamlit Secrets
     creds_dict = st.secrets["gcp_service_account"]
-    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+    # Scope ini mencakup Spreadsheet dan Drive agar tidak error 403 lagi
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
     creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     client = gspread.authorize(creds)
-    # Ganti 'HotWheelsDB' dengan nama Google Sheet Anda
     return client.open("HotWheelsDB").sheet1
 
 # 2. Fungsi Load History dari Sheets
