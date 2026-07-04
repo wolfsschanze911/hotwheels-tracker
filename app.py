@@ -14,19 +14,9 @@ def send_telegram_msg(message):
         chat_id = st.secrets["TELEGRAM_CHAT_ID"]
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
-        
-        # Kirim request dan cek status
-        response = requests.post(url, data=payload, timeout=5)
-        
-        # Ini akan menampilkan error di layar jika gagal
-        if response.status_code != 200:
-            st.error(f"Telegram gagal kirim: {response.text}")
-        else:
-            st.success("Notifikasi terkirim!")
-            
+        requests.post(url, data=payload, timeout=5)
     except Exception as e:
-        # Ini akan menampilkan error teknis
-        st.error(f"Error teknis Telegram: {e}")
+        st.error(f"Gagal kirim notifikasi: {e}")
 
 # 1. Koneksi ke Google Sheets menggunakan Secrets
 def connect_to_sheets():
@@ -44,24 +34,32 @@ def connect_to_sheets():
 def load_history():
     try:
         sheet = connect_to_sheets()
+        # Ambil data
         data = sheet.get_all_records()
         
-        # --- DEBUGGING SECTION ---
-        st.write(f"DEBUG: Tipe data 'data': {type(data)}")
-        st.write(f"DEBUG: Isi 'data' (5 item pertama): {data[:5]}")
-        # -------------------------
-        
-        # Coba proses data
-        if isinstance(data, list):
-            return {row["Key"]: int(row["Stock"]) for row in data}
-        else:
-            st.error("Data dari Sheet bukan list!")
+        # Debugging: tampilkan jika data bukan list (biasanya error sheet)
+        if not isinstance(data, list):
+            st.error(f"Format sheet salah. Data yang terbaca adalah: {type(data)}")
             return {}
+
+        history = {}
+        for row in data:
+            # Pastikan row adalah dictionary
+            if isinstance(row, dict):
+                # Gunakan .get agar tidak crash jika key tidak ada
+                key = row.get("Key")
+                stock = row.get("Stock")
+                if key:
+                    history[str(key)] = int(stock) if stock else 0
+            else:
+                # Jika baris bukan dictionary (misal: string kosong), abaikan saja
+                continue
+                
+        return history
             
     except Exception as e:
         st.error(f"Error pada load_history: {e}")
         return {}
-
 # 3. Fungsi Save History ke Sheets
 def save_history(history):
     try:
@@ -118,10 +116,6 @@ st.title("🚗 Alfagift Hotwheels Live Tracker")
 if st.button("SCAN SEMUA TOKO"):
     send_telegram_msg("Bot sudah aktif dan bisa kirim pesan!")
     history = load_history()
-    if not history and not st.checkbox("Saya yakin ingin scan (data lama akan terhapus jika tidak ada history)"):
-        st.warning("Data history gagal dimuat atau kosong! Jika dilanjutkan, data lama di Google Sheets mungkin terhapus. Silakan cek koneksi/isi sheet.")
-        st.stop() # Menghentikan bot agar tidak menjalankan scan
-    st.write(f"Tipe data history: {type(history)}")
     progress_bar = st.progress(0)
     session = requests.Session()
     
