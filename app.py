@@ -76,32 +76,35 @@ url_pencarian = "https://webcommerce-gw.alfagift.id/v2/products/searches?keyword
 st.set_page_config(page_title="Hot Wheels Tracker", layout="wide")
 st.title("🚗 Alfagift Hotwheels Live Tracker")
 
-# Baris 83:
-for i, toko in enumerate(daftar_toko_depok):
-        
-        # BARIS 85 KE BAWAH HARUS MASUK KE KANAN SEPERTI INI:
-        headers_toko = HEADERS.copy()
-        headers_toko.update({'storecode': toko['storecode'], 'fccode': toko['fccode']})
-        
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.subheader(f"📍 {toko['nama']}")
-        with col2:
-            url_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote('Alfamart ' + toko['nama'])}"
-            st.link_button("📍 Maps", url=url_maps)
+
+if st.button("SCAN SEMUA TOKO"):
+        history = load_history()
+        progress_bar = st.progress(0)
+
+        # Baris 'for' di bawah ini HARUS menjorok 4 spasi ke dalam
+        for i, toko in enumerate(daftar_toko_depok):
+            headers_toko = HEADERS.copy()
+            headers_toko.update({'storecode': toko['storecode'], 'fccode': toko['fccode']})
             
-        # Baris 96 (Ini sudah benar posisinya di gambar Anda)
-        with st.expander(f"📍 {toko['nama']} ({len(stok_tersedia)} item ditemukan)"):
-                    if stok_tersedia:
-                        list_data = []
-                        for p in stok_tersedia:
-                            nama_produk = p.get("productName", "N/A")
-                            current_stock = p.get("stock", 0)
-                            key = f"{toko['nama']}_{nama_produk}"
-                            
-                            # Cek history
-                            prev_stock = history.get(key, 0)
-                            diff = current_stock - prev_stock
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.subheader(f"📍 {toko['nama']}")
+            with col2:
+                url_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote('Alfamart ' + toko['nama'])}"
+                st.link_button("📍 Maps", url=url_maps)
+
+            # Bagian ini juga harus menjorok 12 spasi ke dalam
+            with st.expander(f"📍 {toko['nama']} ({len(stok_tersedia)} item ditemukan)"):
+                if stok_tersedia:
+                    list_data = []
+                    for p in stok_tersedia:
+                        nama_produk = p.get("productName", "N/A")
+                        current_stock = p.get("stock", 0)
+                        key = f"{toko['nama']}_{nama_produk}"
+
+                        # Cek history
+                        prev_stock = history.get(key, 0)
+                        diff = current_stock - prev_stock
                             
                             # Logika Status
                             if prev_stock == 0:
