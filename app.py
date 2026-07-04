@@ -88,12 +88,12 @@ if st.button("🚀 SCAN SEMUA TOKO"):
        # ... semua kode di dalam loop ini juga harus menjorok ke dalam ...
        col1, col2 = st.columns([3, 1])
        with col1:
-        st.subheader(f"📍 {toko['nama']}")
+           st.subheader(f"📍 {toko['nama']}")
        with col2:
-        url_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote('Alfamart ' + toko['nama'])}"
-        st.link_button("📍 Maps", url=url_maps)
+           url_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote('Alfamart ' + toko['nama'])}"
+           st.link_button("📍 Maps", url=url_maps)
                 
-                with st.expander(f"📍 {toko['nama']} ({len(stok_tersedia)} item ditemukan)"):
+        with st.expander(f"📍 {toko['nama']} ({len(stok_tersedia)} item ditemukan)"):
                     if stok_tersedia:
                         list_data = []
                         for p in stok_tersedia:
