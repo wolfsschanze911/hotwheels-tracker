@@ -41,7 +41,7 @@ def connect_to_sheets():
     return client.open("HotWheelsDB").sheet1
 
 # 2. Fungsi Load History dari Sheets
-ddef load_history():
+def load_history():
     try:
         sheet = connect_to_sheets()
         data = sheet.get_all_records()
