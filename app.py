@@ -100,6 +100,7 @@ st.title("🚗 Alfagift Hotwheels Live Tracker")
 
 
 if st.button("SCAN SEMUA TOKO"):
+    send_telegram_msg("Bot sudah aktif dan bisa kirim pesan!")
     history = load_history()
     progress_bar = st.progress(0)
     session = requests.Session()
