@@ -76,23 +76,21 @@ url_pencarian = "https://webcommerce-gw.alfagift.id/v2/products/searches?keyword
 st.set_page_config(page_title="Hot Wheels Tracker", layout="wide")
 st.title("🚗 Alfagift Hotwheels Live Tracker")
 
-if st.button("🚀 SCAN SEMUA TOKO"):
-    history = load_history() # Load history dari file
-    progress_bar = st.progress(0)
-    
+# Baris 83:
     for i, toko in enumerate(daftar_toko_depok):
-        # Gunakan 4 spasi di sini (tekan tombol Spasi 4x, jangan Tab)
+        
+        # BARIS 85 KE BAWAH HARUS MASUK KE KANAN SEPERTI INI:
         headers_toko = HEADERS.copy()
         headers_toko.update({'storecode': toko['storecode'], 'fccode': toko['fccode']})
-    
-       # ... semua kode di dalam loop ini juga harus menjorok ke dalam ...
-       col1, col2 = st.columns([3, 1])
-       with col1:
-           st.subheader(f"📍 {toko['nama']}")
-       with col2:
-           url_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote('Alfamart ' + toko['nama'])}"
-           st.link_button("📍 Maps", url=url_maps)
-                
+        
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.subheader(f"📍 {toko['nama']}")
+        with col2:
+            url_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote('Alfamart ' + toko['nama'])}"
+            st.link_button("📍 Maps", url=url_maps)
+            
+        # Baris 96 (Ini sudah benar posisinya di gambar Anda)
         with st.expander(f"📍 {toko['nama']} ({len(stok_tersedia)} item ditemukan)"):
                     if stok_tersedia:
                         list_data = []
