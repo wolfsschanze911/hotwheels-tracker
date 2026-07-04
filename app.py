@@ -6,7 +6,6 @@ import requests
 import urllib.parse 
 import time
 
-# --- FUNGSI UTAMA ---
 def send_telegram_msg(message):
     try:
         token = st.secrets["TELEGRAM_TOKEN"]
@@ -19,46 +18,46 @@ def send_telegram_msg(message):
 
 def connect_to_sheets():
     creds_dict = st.secrets["gcp_service_account"]
-    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
     creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     client = gspread.authorize(creds)
     return client.open("HotWheelsDB").sheet1
 
+# --- PERBAIKAN HANYA DI BAGIAN INI ---
 def load_history():
-    """Memuat data dengan validasi ketat agar tidak crash."""
     try:
         sheet = connect_to_sheets()
         data = sheet.get_all_records()
         
-        # Validasi: Pastikan data adalah list (bukan error string)
-        if not isinstance(data, list):
-            return {}
-
         history = {}
         for row in data:
+            # Perbaikan: Memastikan row adalah dictionary sebelum mengaksesnya
             if isinstance(row, dict):
-                # Sesuai screenshot: header-nya adalah 'key' (lowercase)
-                k = row.get("key") 
-                s = row.get("Stock")
-                if k:
-                    history[str(k)] = int(s) if s else 0
+                key = row.get("key") # Menggunakan "key" (sesuai screenshot Anda)
+                stock = row.get("Stock")
+                if key:
+                    history[str(key)] = int(stock) if stock else 0
         return history
+            
     except Exception as e:
-        st.warning(f"Info: Belum ada history atau gagal muat. (Error: {e})")
+        st.error(f"Error pada load_history: {e}")
         return {}
+# -------------------------------------
 
 def save_history(history):
     try:
         sheet = connect_to_sheets()
         rows = [[key, val] for key, val in history.items()]
-        data_to_write = [["key", "Stock"]] + rows # Header lowercase 'key'
+        data_to_write = [["key", "Stock"]] + rows
         sheet.clear()
         sheet.append_rows(data_to_write)
     except Exception as e:
         st.error(f"Gagal menyimpan history: {e}")
 
 # --- KONFIGURASI TOKO & HEADERS ---
-# Data dari skrip kerja Anda
 daftar_toko_depok = [
     {"nama": "MARGASATWA RAYA", "storecode": "eyJzdG9yZV9jb2RlIjoiMU1UOCIsImRlbGl2ZXJ5Ijp0cnVlLCJzYXBhIjp0cnVlLCJzdG9yZV9tZXRob2QiOjEsImJsYWNrbGlzdF90YWdzIjpbXSwiZGlzdGFuY2UiOjE2MzUuNiwibWF4RGlzdGFuY2UiOjIwMDAsImZsYWdSb3V0ZSI6IjFNMUciLCJkZXBvX2lkIjoiS1kxMiJ9", "fccode": "eyJzZWxsZXJfaWQiOiIxIiwiZmNfY29kZSI6IktaMDEifQ"},
     {"nama": "FATMAWATI PDK LABU", "storecode": "eyJzdG9yZV9jb2RlIjoiMU1OOSIsImRlbGl2ZXJ5Ijp0cnVlLCJzYXBhIjp0cnVlLCJzdG9yZV9tZXRob2QiOjEsImJsYWNrbGlzdF90YWdzIjpbXSwiZGlzdGFuY2UiOjIzOTEuNiwibWF4RGlzdGFuY2UiOjIwMDAsImZsYWdSb3V0ZSI6IjFNMUciLCJkZXBvX2lkIjoiS1kxMiJ9", "fccode": "eyJzZWxsZXJfaWQiOiIxIiwiZmNfY29kZSI6IktaMDEifQ"},
@@ -90,27 +89,21 @@ HEADERS = {
 
 url_pencarian = "https://webcommerce-gw.alfagift.id/v2/products/searches?keyword=hot-wheels&start=0&limit=60"
 
-# --- UI STREAMLIT ---
 st.set_page_config(page_title="Hot Wheels Tracker", layout="wide")
 st.title("🚗 Alfagift Hotwheels Live Tracker")
 
 if st.button("SCAN SEMUA TOKO"):
     history = load_history()
-    is_first_run = (len(history) == 0) # Tandai jika ini scan pertama
-    
-    if is_first_run:
-        st.info("Scan pertama terdeteksi. Menyimpan data awal (tanpa notifikasi)...")
-    
     progress_bar = st.progress(0)
-    new_history = {} # Kita buat dict baru agar aman
+    session = requests.Session()
     
     for i, toko in enumerate(daftar_toko_depok):
         try:
-            # Setup headers
             headers_toko = HEADERS.copy()
             headers_toko.update({'storecode': toko['storecode'], 'fccode': toko['fccode']})
             
-            response = requests.get(url_pencarian, headers=headers_toko, timeout=10)
+            response = requests.get(url_pencarian, headers=headers_toko, timeout=15)
+            time.sleep(1)
             
             if response.status_code == 200:
                 data = response.json()
@@ -119,37 +112,63 @@ if st.button("SCAN SEMUA TOKO"):
             else:
                 stok_tersedia = []
 
-            # UI Update
-            st.write(f"### 📍 {toko['nama']} ({len(stok_tersedia)} item)")
-            
-            for p in stok_tersedia:
-                nama_produk = p.get("productName", "N/A")
-                current_stock = p.get("stock", 0)
-                key = f"{toko['nama']}_{nama_produk}"
-                
-                # Simpan ke history baru
-                new_history[key] = current_stock
-                
-                # Cek perubahan (JANGAN kirim notifikasi jika is_first_run)
-                if not is_first_run:
-                    prev_stock = history.get(key, 0)
-                    
-                    if prev_stock == 0 and current_stock > 0:
-                        pesan = f"🆕 <b>BARU:</b> {toko['nama']} | {nama_produk} (Stok: {current_stock})"
-                        send_telegram_msg(pesan)
-                    elif prev_stock > 0 and current_stock == 0:
-                        pesan = f"⚠️ <b>HABIS:</b> {toko['nama']} | {nama_produk}"
-                        send_telegram_msg(pesan)
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.subheader(f"📍 {toko['nama']}")
+            with col2:
+                url_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote('Alfamart ' + toko['nama'])}"
+                st.link_button("📍 Maps", url=url_maps)
 
+            with st.expander(f"Lihat stok ({len(stok_tersedia)} item ditemukan)"):
+                if stok_tersedia:
+                    list_data = []
+                    for p in stok_tersedia:
+                        nama_produk = p.get("productName", "N/A")
+                        current_stock = p.get("stock", 0)
+                        key = f"{toko['nama']}_{nama_produk}"
+
+                        prev_stock = history.get(key, 0)
+                        diff = current_stock - prev_stock
+                        
+                        if prev_stock == 0 and current_stock > 0:
+                            status = "🆕 Baru"
+                            pesan = (f"🚗 <b>STOK BARU DITEMUKAN!</b>\n\n"
+                                     f"📍 <b>Toko:</b> {toko['nama']}\n"
+                                     f"🏎 <b>Produk:</b> {nama_produk}\n"
+                                     f"💰 <b>Harga:</b> Rp {p.get('finalPrice', 0):,.0f}")
+                            send_telegram_msg(pesan)
+                        
+                        elif prev_stock > 0 and current_stock == 0:
+                            status = "🔴 Habis (Laku)"
+                            pesan = (f"⚠️ <b>BARANG LAKU!</b>\n\n"
+                                     f"📍 <b>Toko:</b> {toko['nama']}\n"
+                                     f"🏎 <b>Produk:</b> {nama_produk}\n"
+                                     f"📢 <i>Stok telah habis terjual.</i>")
+                            send_telegram_msg(pesan)
+                        
+                        elif diff > 0:
+                            status = f"🟢 +{diff}"
+                        elif diff < 0:
+                            status = f"🔴 {diff}"
+                        else:
+                            status = "➖ Tetap"
+                            
+                        history[key] = current_stock
+                        
+                        list_data.append({
+                            "Produk": nama_produk,
+                            "Stok": current_stock,
+                            "Status": status,
+                            "Harga": f"Rp {p.get('finalPrice', 0):,.0f}"
+                        })
+                    st.table(pd.DataFrame(list_data))
+                else:
+                    st.write("Stok kosong.")
+        
         except Exception as e:
             st.error(f"Error di {toko['nama']}: {e}")
             
         progress_bar.progress((i + 1) / len(daftar_toko_depok))
             
-    # Simpan hasil akhir ke Sheets
-    save_history(new_history)
-    st.success("Scan selesai! Data telah diperbarui.")
-            
-    # Save history (Berada di luar for loop)
     save_history(history)
     st.success("Scan selesai! Data stok terbaru telah disimpan.")
