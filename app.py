@@ -78,14 +78,22 @@ st.title("🚗 Alfagift Hotwheels Live Tracker")
 
 
 if st.button("SCAN SEMUA TOKO"):
-        history = load_history()
-        progress_bar = st.progress(0)
+    history = load_history()
+    progress_bar = st.progress(0)
 
-        # Baris 'for' di bawah ini HARUS menjorok 4 spasi ke dalam
-        for i, toko in enumerate(daftar_toko_depok):
+    for i, toko in enumerate(daftar_toko_depok):
+        try:
+            # Setup headers
             headers_toko = HEADERS.copy()
             headers_toko.update({'storecode': toko['storecode'], 'fccode': toko['fccode']})
             
+            # Tambahkan logika request API Anda di sini (response = requests.get(...))
+            # ... (Pastikan response didefinisikan sebelum stok_tersedia) ...
+            
+            # (Contoh asumsikan data 'products' sudah diambil dari response)
+            # products = data.get("products", [])
+            # stok_tersedia = [p for p in products if p.get("stock", 0) > 0]
+
             col1, col2 = st.columns([3, 1])
             with col1:
                 st.subheader(f"📍 {toko['nama']}")
@@ -93,7 +101,6 @@ if st.button("SCAN SEMUA TOKO"):
                 url_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote('Alfamart ' + toko['nama'])}"
                 st.link_button("📍 Maps", url=url_maps)
 
-            # Bagian ini juga harus menjorok 12 spasi ke dalam
             with st.expander(f"📍 {toko['nama']} ({len(stok_tersedia)} item ditemukan)"):
                 if stok_tersedia:
                     list_data = []
@@ -106,37 +113,36 @@ if st.button("SCAN SEMUA TOKO"):
                         prev_stock = history.get(key, 0)
                         diff = current_stock - prev_stock
                             
-                            # Logika Status
-                            if prev_stock == 0:
-                                status = "🆕 Baru"
-                            elif diff > 0:
-                                status = f"🟢 +{diff}"
-                            elif diff < 0:
-                                status = f"🔴 {diff}"
-                            else:
-                                status = "➖ Tetap"
-                                
-                            # Simpan update
-                            history[key] = current_stock
+                        # Logika Status
+                        if prev_stock == 0:
+                            status = "🆕 Baru"
+                        elif diff > 0:
+                            status = f"🟢 +{diff}"
+                        elif diff < 0:
+                            status = f"🔴 {diff}"
+                        else:
+                            status = "➖ Tetap"
                             
-                            list_data.append({
-                                "Produk": nama_produk,
-                                "Stok": current_stock,
-                                "Status": status,
-                                "Harga": f"Rp {p.get('finalPrice', 0):,.0f}"
-                            })
-                        st.table(pd.DataFrame(list_data))
-                    else:
-                        st.write("Stok kosong.")
-            else:
-                st.error(f"Gagal akses {toko['nama']}")
-                
+                        # Simpan update ke dictionary history
+                        history[key] = current_stock
+                        
+                        list_data.append({
+                            "Produk": nama_produk,
+                            "Stok": current_stock,
+                            "Status": status,
+                            "Harga": f"Rp {p.get('finalPrice', 0):,.0f}"
+                        })
+                    
+                    st.table(pd.DataFrame(list_data))
+                else:
+                    st.write("Stok kosong.")
+                    
         except Exception as e:
             st.error(f"Error di {toko['nama']}: {e}")
         
-        # Update progress bar
+        # Update progress bar (Berada di dalam loop, tapi di luar blok try-except)
         progress_bar.progress((i + 1) / len(daftar_toko_depok))
             
-    # Save history setelah semua selesai
+    # Save history (Berada di luar for loop)
     save_history(history)
     st.success("Scan selesai! Data stok terbaru telah disimpan.")
