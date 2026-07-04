@@ -18,20 +18,28 @@ def connect_to_sheets():
 def load_history():
     try:
         sheet = connect_to_sheets()
-        all_values = sheet.get_all_values() 
-        # Jika sheet kosong atau cuma ada header, kembalikan dict kosong
-        if len(all_values) <= 1:
-            return {}
+        # Mengambil semua nilai sebagai list of lists (baris per baris)
+        # Tidak ada penggunaan dictionary sama sekali di sini
+        all_rows = sheet.get_all_values()
         
+        # Debugging: Jika ada error, kita tahu data apa yang diterima
+        if not all_rows:
+            return {}
+
         history = {}
-        # Lewati header (baris 0), baca dari baris 1 dst
-        for row in all_values[1:]:
-            if len(row) >= 2: # Harus ada kolom Key dan Stock
-                key, val = row[0], row[1]
-                history[key] = int(val)
+        # Membaca baris mulai dari baris ke-2 (index 1), karena baris 1 adalah header
+        for row in all_rows[1:]:
+            if len(row) >= 2: # Pastikan ada kolom A (Key) dan B (Stock)
+                key = str(row[0])
+                stock_str = str(row[1])
+                try:
+                    history[key] = int(stock_str)
+                except ValueError:
+                    continue
         return history
     except Exception as e:
-        st.warning(f"Belum ada data history: {e}")
+        # Jika error, kita cetak error aslinya
+        st.error(f"Error pada load_history: {type(e).__name__} - {e}")
         return {}
 
 # 3. SAVE - Menulis ulang sheet secara bersih
