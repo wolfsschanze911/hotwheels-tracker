@@ -5,6 +5,16 @@ from google.oauth2.service_account import Credentials
 import requests 
 import urllib.parse # Sesuaikan dengan library request yang Anda pakai
 
+def send_telegram_msg(message):
+    try:
+        token = st.secrets["TELEGRAM_TOKEN"]
+        chat_id = st.secrets["TELEGRAM_CHAT_ID"]
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
+        requests.post(url, data=payload, timeout=5)
+    except Exception as e:
+        st.error(f"Gagal kirim notifikasi: {e}")
+
 # 1. Koneksi ke Google Sheets menggunakan Secrets
 def connect_to_sheets():
     creds_dict = st.secrets["gcp_service_account"]
@@ -119,10 +129,28 @@ if st.button("SCAN SEMUA TOKO"):
                         diff = current_stock - prev_stock
                             
                         # Logika Status
-                        if prev_stock == 0: status = "🆕 Baru"
-                        elif diff > 0: status = f"🟢 +{diff}"
-                        elif diff < 0: status = f"🔴 {diff}"
-                        else: status = "➖ Tetap"
+                        if prev_stock == 0 and current_stock > 0:
+                            status = "🆕 Baru"
+                            pesan = (f"🚗 <b>STOK BARU DITEMUKAN!</b>\n\n"
+                                     f"📍 <b>Toko:</b> {toko['nama']}\n"
+                                     f"🏎 <b>Produk:</b> {nama_produk}\n"
+                                     f"💰 <b>Harga:</b> Rp {p.get('finalPrice', 0):,.0f}")
+                            send_telegram_msg(pesan)
+            
+                        elif prev_stock > 0 and current_stock == 0:
+                            status = "🔴 Habis (Laku)"
+                            pesan = (f"⚠️ <b>BARANG LAKU!</b>\n\n"
+                                     f"📍 <b>Toko:</b> {toko['nama']}\n"
+                                     f"🏎 <b>Produk:</b> {nama_produk}\n"
+                                     f"📢 <i>Stok telah habis terjual.</i>")
+                            send_telegram_msg(pesan)
+            
+                        elif diff > 0:
+                            status = f"🟢 +{diff}"
+                        elif diff < 0:
+                            status = f"🔴 {diff}"
+                        else:
+                            status = "➖ Tetap"
                             
                         history[key] = current_stock
                         
