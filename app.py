@@ -2,36 +2,63 @@ import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
 import requests
-import urllib.parse
 
-# 1. Koneksi Sheet (Sama dengan sebelumnya)
-def connect_to_sheets():
-    creds_dict = st.secrets["gcp_service_account"]
-    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-    client = gspread.authorize(creds)
-    return client.open("HotWheelsDB").sheet1
+# [FUNGSI UTAMA]
+def send_telegram_msg(message):
+    try:
+        token = st.secrets["TELEGRAM_TOKEN"]
+        chat_id = st.secrets["TELEGRAM_CHAT_ID"]
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
+        requests.post(url, data=payload, timeout=5)
+    except:
+        pass
 
-# 2. Baca Database (Paling AMAN)
 def load_history():
     try:
         sheet = connect_to_sheets()
-        rows = sheet.get_all_values() # Mengambil list of lists (bukan dictionary)
+        rows = sheet.get_all_values()
         history = {}
         if len(rows) > 1:
-            for row in rows[1:]: # Lewati header
+            for row in rows[1:]:
                 if len(row) >= 2:
                     history[row[0]] = int(row[1])
         return history
     except:
         return {}
 
-# 3. Simpan Database
 def save_history(history):
     sheet = connect_to_sheets()
     sheet.clear()
     data = [["Key", "Stock"]] + [[k, v] for k, v in history.items()]
     sheet.append_rows(data)
+
+# [LOGIKA SCAN]
+if st.button("SCAN"):
+    history = load_history()
+    new_history = {}
+    
+    # Simulasikan scan (contoh saja)
+    # Anda masukkan logic request Alfagift Anda di sini
+    # Misal: current_stock = ...
+    
+    key = "CONTOH_PRODUK"
+    current_stock = 5
+    
+    # Logika Notifikasi Aman
+    prev_stock = history.get(key, 0)
+    
+    # NOTIFIKASI HANYA JIKA HISTORY SUDAH ADA (Bukan saat pertama kali scan)
+    if len(history) > 0: 
+        if prev_stock == 0 and current_stock > 0:
+            send_telegram_msg("Barang Baru!")
+            
+    # Update history
+    new_history[key] = current_stock
+    
+    # Simpan
+    save_history(new_history)
+    st.success("Selesai")
 
 # --- KONFIGURASI TOKO & HEADERS ---
 daftar_toko_depok = [
