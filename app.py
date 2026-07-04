@@ -60,18 +60,6 @@ def save_history(history):
     except Exception as e:
         st.error(f"Gagal menyimpan history: {e}")
 
-# 3. Fungsi Save History ke Sheets
-def save_history(history):
-    try:
-        sheet = connect_to_sheets()
-        sheet.clear()
-        sheet.append_row(["Key", "Stock"])
-        rows = [[key, val] for key, val in history.items()]
-        if rows:
-            sheet.append_rows(rows)
-    except Exception as e:
-        st.error(f"Gagal menyimpan history: {e}")
-
 # --- KONFIGURASI TOKO & HEADERS ---
 # Data dari skrip kerja Anda
 daftar_toko_depok = [
