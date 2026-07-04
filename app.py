@@ -6,7 +6,7 @@ import requests
 import urllib.parse 
 import time
 
-def # send_telegram_msg(message):
+def  send_telegram_msg(message):
     try:
         token = st.secrets["TELEGRAM_TOKEN"]
         chat_id = st.secrets["TELEGRAM_CHAT_ID"]
