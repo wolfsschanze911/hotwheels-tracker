@@ -73,7 +73,7 @@ HEADERS = {
 url_pencarian = "https://webcommerce-gw.alfagift.id/v2/products/searches?keyword=hot-wheels&start=0&limit=60"
 
 st.set_page_config(page_title="Hot Wheels Tracker", layout="wide")
-st.title("🚗 Depok Live Search Tracker")
+st.title("🚗 Alfagift Hotwheels Live Tracker")
 
 if st.button("🚀 SCAN SEMUA TOKO"):
     history = load_history() # Load history dari file
