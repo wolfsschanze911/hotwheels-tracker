@@ -6,8 +6,7 @@ import requests
 import urllib.parse 
 import time
 import requests 
-import streamlit as st
-st.write("Daftar key yang terbaca oleh sistem:", st.secrets.keys())# Sesuaikan dengan library request yang Anda pakai
+import json # Sesuaikan dengan library request yang Anda pakai
 
 def send_telegram_msg(message):
     try:
@@ -104,6 +103,7 @@ st.title("🚗 Alfagift Hotwheels Live Tracker")
 if st.button("SCAN SEMUA TOKO"):
     send_telegram_msg("Bot sudah aktif dan bisa kirim pesan!")
     history = load_history()
+    st.write(f"Tipe data history: {type(history)}")
     progress_bar = st.progress(0)
     session = requests.Session()
     
