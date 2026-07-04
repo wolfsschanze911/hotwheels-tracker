@@ -156,11 +156,8 @@ if st.button("SCAN SEMUA TOKO"):
                         diff = current_stock - prev_stock
                         # --- TAMBAHKAN DEBUG DI BAWAH INI ---
                         st.write(f"DEBUG: {nama_produk} | Prev: {prev_stock} | Curr: {current_stock}")
-                        # -----------------------------------
+                        # ----------------------------------
                         
-                        # Logika Status
-                        if prev_stock == 0 and current_stock > 0:
-                            
                         # Logika Status
                         if prev_stock == 0 and current_stock > 0:
                             status = "🆕 Baru"
