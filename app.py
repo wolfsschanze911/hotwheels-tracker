@@ -21,29 +21,28 @@ def connect_to_sheets():
 def load_history():
     try:
         sheet = connect_to_sheets()
-        # Mengambil semua nilai sebagai list of lists (baris per baris)
-        # Cara ini TIDAK bergantung pada struktur dictionary yang sering error
-        all_rows = sheet.get_all_values() 
+        # Menggunakan get_all_values() untuk membaca baris mentah
+        all_rows = sheet.get_all_values()
         
         history = {}
         # Jika sheet kosong atau cuma ada header, kembalikan {}
         if len(all_rows) <= 1:
             return {}
         
-        # Mulai dari baris index 1 (melewati header di index 0)
+        # Mulai loop dari baris index 1 (melewati header di index 0)
         for row in all_rows[1:]:
             if len(row) >= 2: # Pastikan ada kolom Key dan Stock
                 key = row[0]
                 stock = row[1]
                 try:
+                    # Pastikan kita ambil angka
                     history[key] = int(stock)
                 except ValueError:
-                    continue # Lewati jika angka stok tidak valid
+                    continue # Lewati jika kolom stok bukan angka
         return history
     except Exception as e:
-        st.error(f"Error saat load: {e}")
+        st.error(f"Error pada load_history: {e}")
         return {}
-
 # 3. Fungsi Save History yang LEBIH STABIL
 def save_history(history):
     try:
