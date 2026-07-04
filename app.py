@@ -5,9 +5,7 @@ from google.oauth2.service_account import Credentials
 import requests 
 import urllib.parse 
 import time
-import requests 
-import streamlit as st
-st.write("Daftar key yang terbaca oleh sistem:", st.secrets.keys())# Sesuaikan dengan library request yang Anda pakai
+import requests # Sesuaikan dengan library request yang Anda pakai
 
 def send_telegram_msg(message):
     try:
