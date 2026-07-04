@@ -81,7 +81,10 @@ if st.button("🚀 SCAN SEMUA TOKO"):
     progress_bar = st.progress(0)
     
     for i, toko in enumerate(daftar_toko_depok):
-    # Kode di bawah ini harus menjorok ke dalam (di bawah 'for')
+
+
+
+        
     headers_toko = HEADERS.copy()
     headers_toko.update({'storecode': toko['storecode'], 'fccode': toko['fccode']})
     
