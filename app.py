@@ -3,7 +3,9 @@ import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
 import requests 
-import urllib.parse # Sesuaikan dengan library request yang Anda pakai
+import urllib.parse 
+import time
+import requests # Sesuaikan dengan library request yang Anda pakai
 
 def send_telegram_msg(message):
     try:
@@ -100,7 +102,8 @@ st.title("🚗 Alfagift Hotwheels Live Tracker")
 if st.button("SCAN SEMUA TOKO"):
     history = load_history()
     progress_bar = st.progress(0)
-
+    session = requests.Session()
+    
     for i, toko in enumerate(daftar_toko_depok):
         try:
             # 1. Setup headers
@@ -108,7 +111,9 @@ if st.button("SCAN SEMUA TOKO"):
             headers_toko.update({'storecode': toko['storecode'], 'fccode': toko['fccode']})
             
             # 2. AMBIL DATA DULU (Penting!)
-            response = requests.get(url_pencarian, headers=headers_toko, timeout=5)
+            response = requests.get(url_pencarian, headers=headers_toko, timeout=15)
+
+            time.sleep(1)
             
             if response.status_code == 200:
                 data = response.json()
