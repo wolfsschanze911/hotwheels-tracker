@@ -18,28 +18,25 @@ def connect_to_sheets():
 def load_history():
     try:
         sheet = connect_to_sheets()
-        # Mengambil semua nilai sebagai list of lists (baris per baris)
-        # Tidak ada penggunaan dictionary sama sekali di sini
-        all_rows = sheet.get_all_values()
+        # Kita ambil data mentah
+        data = sheet.get_all_values()
         
-        # Debugging: Jika ada error, kita tahu data apa yang diterima
-        if not all_rows:
+        # Pengecekan detektif
+        st.write(f"DEBUG: Tipe data yang diterima: {type(data)}")
+        
+        if not isinstance(data, list):
+            st.error(f"Ternyata datanya bukan list! Ini isinya: {data}")
             return {}
 
+        # Lanjut proses
         history = {}
-        # Membaca baris mulai dari baris ke-2 (index 1), karena baris 1 adalah header
-        for row in all_rows[1:]:
-            if len(row) >= 2: # Pastikan ada kolom A (Key) dan B (Stock)
-                key = str(row[0])
-                stock_str = str(row[1])
-                try:
-                    history[key] = int(stock_str)
-                except ValueError:
-                    continue
+        for row in data[1:]:
+            if len(row) >= 2:
+                history[str(row[0])] = int(row[1])
         return history
+        
     except Exception as e:
-        # Jika error, kita cetak error aslinya
-        st.error(f"Error pada load_history: {type(e).__name__} - {e}")
+        st.error(f"Error di load_history: {e}")
         return {}
 
 # 3. SAVE - Menulis ulang sheet secara bersih
