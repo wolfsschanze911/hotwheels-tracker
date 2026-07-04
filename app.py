@@ -5,60 +5,51 @@ from google.oauth2.service_account import Credentials
 import requests 
 import urllib.parse # Sesuaikan dengan library request yang Anda pakai
 
-# 1. Koneksi ke Google Sheets menggunakan Secrets
+# 1. Koneksi (Pastikan ini tetap ada)
 def connect_to_sheets():
     creds_dict = st.secrets["gcp_service_account"]
-    # Scope ini mencakup Spreadsheet dan Drive agar tidak error 403 lagi
-    scopes = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive"
-    ]
+    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
     creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     client = gspread.authorize(creds)
-    return client.open("HotWheelsDB").sheet1
+    # Sesuaikan "Sheet1" dengan nama tab di file Anda
+    return client.open("HotWheelsDB").worksheet("Sheet1")
 
-# 2. Fungsi Load History dari Sheets
+# 2. LOAD - Menggunakan list murni, ANTI ERROR
 def load_history():
     try:
         sheet = connect_to_sheets()
-        # Menggunakan get_all_values() untuk membaca baris mentah
-        all_rows = sheet.get_all_values()
-        
-        history = {}
-        # Jika sheet kosong atau cuma ada header, kembalikan {}
-        if len(all_rows) <= 1:
+        all_values = sheet.get_all_values() 
+        # Jika sheet kosong atau cuma ada header, kembalikan dict kosong
+        if len(all_values) <= 1:
             return {}
         
-        # Mulai loop dari baris index 1 (melewati header di index 0)
-        for row in all_rows[1:]:
-            if len(row) >= 2: # Pastikan ada kolom Key dan Stock
-                key = row[1]
-                stock = row[1]
-                try:
-                    # Pastikan kita ambil angka
-                    history[key] = int(stock)
-                except ValueError:
-                    continue # Lewati jika kolom stok bukan angka
+        history = {}
+        # Lewati header (baris 0), baca dari baris 1 dst
+        for row in all_values[1:]:
+            if len(row) >= 2: # Harus ada kolom Key dan Stock
+                key, val = row[0], row[1]
+                history[key] = int(val)
         return history
     except Exception as e:
-        st.error(f"Error pada load_history: {e}")
+        st.warning(f"Belum ada data history: {e}")
         return {}
-# 3. Fungsi Save History yang LEBIH STABIL
+
+# 3. SAVE - Menulis ulang sheet secara bersih
 def save_history(history):
     try:
         sheet = connect_to_sheets()
-        sheet.clear()
+        sheet.clear() # Kosongkan sheet dulu
         
-        # Siapkan data lengkap dengan Header
-        data_to_write = [["Key", "Stock"]]
+        # Buat list data (Header + Isi)
+        data = [["Key", "Stock"]]
         for key, val in history.items():
-            data_to_write.append([key, val])
+            data.append([key, val])
         
-        # Tulis semua sekaligus (lebih cepat dan aman)
-        sheet.append_rows(data_to_write)
-        st.write("Data berhasil disimpan ke Sheets.")
+        # Tulis ke sel A1 (menggunakan update agar langsung tertulis semua)
+        sheet.update(range_name='A1', values=data)
+        st.success("Data berhasil tersimpan ke Sheets!")
     except Exception as e:
-        st.error(f"Gagal menyimpan history: {e}")
+        st.error(f"Gagal simpan: {e}")
 
 # --- KONFIGURASI TOKO & HEADERS ---
 # Data dari skrip kerja Anda
