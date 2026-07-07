@@ -37,7 +37,7 @@ def render_dashboard():
 
         <br>
 
-        ⚪ {scan_state["status"]}
+        {scan_state["status"]}
 
         <br>
 
