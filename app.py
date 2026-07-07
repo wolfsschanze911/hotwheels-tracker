@@ -5,26 +5,26 @@ from google.oauth2.service_account import Credentials
 import requests
 
 def connect_to_sheets():
+    try:
+        creds_dict = dict(st.secrets["gcp_service_account"])
 
-    creds_dict = dict(st.secrets["gcp_service_account"])
-
-    scopes = [
+        scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
-    ]
+        ]
 
-    creds = Credentials.from_service_account_info(
+        creds = Credentials.from_service_account_info(
         creds_dict,
         scopes=scopes
-    )
+        )
 
-    client = gspread.authorize(creds)
+        client = gspread.authorize(creds)
 
-    return client.open("HotWheelsDB").worksheet("Sheet1")
+            return client.open("HotWheelsDB").worksheet("Sheet1")
 
-    except Exception as e:
-        st.error(f"Gagal koneksi Google Sheets: {e}")
-        return None
+            except Exception as e:
+                st.error(f"Gagal koneksi Google Sheets: {e}")
+            return None
         
 # 2. LOAD - Menggunakan list murni, ANTI ERROR
 def load_history():
