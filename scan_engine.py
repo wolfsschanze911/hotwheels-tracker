@@ -37,18 +37,13 @@ def start_scan():
         stores_total=total_toko
     )
 
-
     for i, toko in enumerate(DAFTAR_TOKO):
         try:
-
             nama_toko = toko["nama"]
-
             update_state(
                 status=f"🟡 Scanning {nama_toko}..."
             )
-
             products = scan_store(toko)
-
             stok_tersedia = [
                 p for p in products
                 if p.get("stock", 0) > 0
