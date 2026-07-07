@@ -1,3 +1,4 @@
+import time
 import streamlit as st
 
 from dashboard import render_dashboard
@@ -5,7 +6,10 @@ from scan_button import render_scan_button
 from search_ui import render_search
 from updates_ui import render_updates
 
-from state import scan_results
+from state import (
+    scan_results,
+    scan_state
+)
 
 
 # ==================================
@@ -17,6 +21,7 @@ st.set_page_config(
     page_icon="🚗",
     layout="centered"
 )
+
 
 
 # ==================================
@@ -32,6 +37,7 @@ Monitor stok Hot Wheels secara realtime.
 )
 
 
+
 # ==================================
 # Dashboard
 # ==================================
@@ -39,7 +45,9 @@ Monitor stok Hot Wheels secara realtime.
 render_dashboard()
 
 
+
 st.divider()
+
 
 
 # ==================================
@@ -49,7 +57,9 @@ st.divider()
 render_scan_button()
 
 
+
 st.divider()
+
 
 
 # ==================================
@@ -59,7 +69,9 @@ st.divider()
 render_search()
 
 
+
 st.divider()
+
 
 
 # ==================================
@@ -69,3 +81,18 @@ st.divider()
 render_updates(
     scan_results
 )
+
+
+
+# ==================================
+# LIVE REFRESH
+# ==================================
+
+if scan_state.get(
+    "running",
+    False
+):
+
+    time.sleep(1)
+
+    st.rerun()
