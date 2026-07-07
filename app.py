@@ -40,10 +40,10 @@ if st.session_state.scan_finished:
 # BUTTON
 # ==========================================
 
-from state import scan_state
+rom state import scan_state
 
 if scan_state["status"].startswith("🟡"):
-    button_text = "⏳ TUNGGU...."
+    button_text = "⏳ SCANNING..."
 else:
     button_text = "🚀 SCAN SEMUA TOKO"
 
