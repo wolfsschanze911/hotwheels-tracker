@@ -23,6 +23,7 @@ dashboard(
     naik=8,
     turun=2,
 )
+
 if st.button("SCAN SEMUA TOKO"):
 
     history = load_history()
