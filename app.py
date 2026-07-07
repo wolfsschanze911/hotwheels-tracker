@@ -3,6 +3,13 @@ import gspread
 import streamlit as st
 from google.oauth2.service_account import Credentials
 import requests
+from config import (
+    DAFTAR_TOKO,
+    HEADERS,
+    URL_PENCARIAN,
+    SPREADSHEET_NAME,
+    WORKSHEET_NAME,
+)
 
 def connect_to_sheets():
     try:
