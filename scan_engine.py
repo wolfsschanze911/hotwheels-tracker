@@ -10,9 +10,72 @@ from state import (
     reset_state,
     update_state,
     scan_state,
-    scan_results
+    scan_results,
 )
 
+
+# ==========================================
+# Helper
+# ==========================================
+
+def process_products(products, store_name, history, counters):
+    """
+    Memproses seluruh produk dari satu toko.
+    """
+
+    available_products = [
+        p for p in products
+        if p.get("stock", 0) > 0
+    ]
+
+    store_key = " ".join(store_name.split()).upper()
+
+    for product in available_products:
+
+        product_name = " ".join(
+            product.get("productName", "").split()
+        ).upper()
+
+        stock = product.get("stock", 0)
+
+        history_key = f"{store_key}_{product_name}"
+
+        status, previous_stock, diff = compare_stock(
+            history,
+            history_key,
+            stock
+        )
+
+        history[history_key] = stock
+
+        counters["products"] += 1
+
+        if status == "🆕 Baru":
+            counters["new"] += 1
+
+        elif status.startswith("🟢"):
+            counters["up"] += 1
+
+        elif status.startswith("🔴"):
+            counters["down"] += 1
+
+        scan_results.append({
+            "produk": product_name,
+            "toko": store_name,
+            "stok": stock,
+            "harga": product.get("finalPrice", 0),
+            "status": status
+        })
+
+
+def refresh_dashboard(refresh):
+    if refresh:
+        refresh()
+
+
+# ==========================================
+# Main Scan
+# ==========================================
 
 def start_scan(refresh=None):
 
@@ -21,148 +84,88 @@ def start_scan(refresh=None):
     reset_state()
     scan_results.clear()
 
-    scan_state["running"] = True
-
-
     history = load_history()
 
+    total_store = len(DAFTAR_TOKO)
 
-    total_produk = 0
-    total_baru = 0
-    total_naik = 0
-    total_turun = 0
-
-
-    total_toko = len(DAFTAR_TOKO)
-
+    counters = {
+        "products": 0,
+        "new": 0,
+        "up": 0,
+        "down": 0,
+    }
 
     update_state(
         status="🟡 Preparing scan...",
-        stores_total=total_toko
+        stores_total=total_store,
+        progress=0
     )
 
-
-    if refresh:
-        refresh()
-
+    refresh_dashboard(refresh)
 
     try:
 
-        for i, toko in enumerate(DAFTAR_TOKO):
+        for index, store in enumerate(DAFTAR_TOKO, start=1):
 
-            nama_toko = toko["nama"]
+            store_name = store["nama"]
 
+            update_state(
+                status=f"🟡 Scanning {store_name}..."
+            )
+
+            refresh_dashboard(refresh)
 
             try:
 
-                update_state(
-                    status=f"🟡 Scanning {nama_toko}..."
+                products = scan_store(store)
+
+                process_products(
+                    products,
+                    store_name,
+                    history,
+                    counters
                 )
-
-
-                if refresh:
-                    refresh()
-
-
-
-                products = scan_store(toko)
-
-
-                stok_tersedia = [
-                    p for p in products
-                    if p.get("stock", 0) > 0
-                ]
-
-
-
-                for p in stok_tersedia:
-
-                    nama_produk = " ".join(
-                        p.get("productName", "").split()
-                    ).upper()
-
-                    nama_toko_clean = " ".join(
-                        nama_toko.split()
-                    ).upper()
-
-                    current_stock = p.get(
-                        "stock",
-                        0
-                    )
-
-                    key = (
-                        f"{nama_toko_clean}_"
-                        f"{nama_produk}"
-                    )
-
-                    status, prev_stock, diff = compare_stock(
-                        history,
-                        key,
-                        current_stock
-                    )
-                    
-                    total_produk += 1
-                    if status == "🆕 Baru":
-                        total_baru += 1
-                    elif status.startswith("🟢"):
-                        total_naik += 1
-                    elif status.startswith("🔴"):
-                        total_turun += 1
-                    
-                    history[key] = current_stock
-                
-                    scan_results.append({
-                        "produk": nama_produk,
-                        "toko": nama_toko,
-                        "stok": current_stock,
-                        "harga": p.get(
-                            "finalPrice",
-                            0
-                        ),
-                        "status": status
-                    })
-
-                update_state(
-
-                    stores_done=i + 1,
-
-                    cars_found=total_produk,
-
-                    new_items=total_baru,
-
-                    price_down=total_naik,
-
-                    price_up=total_turun,
-
-                    progress=int(
-                        ((i + 1) / total_toko) * 100
-                    )
-                )
-
-                if refresh:
-                    refresh()
 
             except Exception as e:
 
                 update_state(
-                    status=f"⚠️ Error {nama_toko}: {e}"
+                    status=f"⚠️ {store_name} gagal : {e}"
                 )
 
-            time.sleep(0.3)
+                refresh_dashboard(refresh)
+
+                continue
+
+            progress = int(
+                (index / total_store) * 100
+            )
+
+            update_state(
+                stores_done=index,
+                cars_found=counters["products"],
+                new_items=counters["new"],
+                price_down=counters["up"],
+                price_up=counters["down"],
+                progress=progress,
+            )
+
+            refresh_dashboard(refresh)
+
+            time.sleep(0.2)
 
         save_history(history)
 
         update_state(
             status="🟢 Scan selesai",
+            progress=100,
             last_scan=datetime.now(
-                timezone(timedelta(hours=7))
-            )
-            .strftime("%d %b %Y %H:%M WIB"),
-            progress=100
+                timezone(
+                    timedelta(hours=7)
+                )
+            ).strftime("%d %b %Y %H:%M WIB")
         )
 
-        if refresh:
-            refresh()
+        refresh_dashboard(refresh)
 
     finally:
 
