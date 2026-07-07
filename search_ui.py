@@ -5,14 +5,12 @@ from search_engine import search
 
 def render_search():
 
-    st.markdown(
-        "## 🔎 Cari Hot Wheels"
-    )
+    st.markdown("## 🔎 Search Hot Wheels")
 
 
     keyword = st.text_input(
         "",
-        placeholder="Cari nama mobil..."
+        placeholder="Cari series Hot Wheels..."
     )
 
 
@@ -34,59 +32,62 @@ def render_search():
 
 
     st.caption(
-        f"Ditemukan {len(results)} produk"
+        f"Ditemukan {len(results)} series"
     )
 
 
-    for product in results:
+    for item in results:
 
-
-        nama_produk = product.get(
-            "produk",
-            "-"
-        )
-
-        jumlah_toko = product.get(
-            "jumlah_toko",
-            0
+        total_stock = sum(
+            toko["stok"]
+            for toko in item["toko"]
         )
 
 
-        st.markdown(
-            f"""
-🚗 **{nama_produk}**
-
-🏪 Tersedia di {jumlah_toko} toko
-"""
-        )
-
-
-        for store in product.get(
-            "toko",
-            []
-        ):
-
-            harga = store.get(
-                "harga",
-                0
-            )
-
-            try:
-                harga = int(harga)
-
-            except (TypeError, ValueError):
-                harga = 0
-
+        with st.container(border=True):
 
             st.markdown(
                 f"""
-&nbsp;&nbsp;🏬 {store.get("toko","-")}
+### 🚗 {item['produk']}
 
-&nbsp;&nbsp;📦 {store.get("stok",0)}
-&nbsp;&nbsp;💰 Rp {harga:,.0f}
-&nbsp;&nbsp;{store.get("status","")}
-"""
+<small>
+🏪 {item['jumlah_toko']} toko ditemukan &nbsp;&nbsp;|&nbsp;&nbsp;
+📦 Total stok <b>{total_stock}</b>
+</small>
+""",
+                unsafe_allow_html=True
             )
 
+            st.divider()
 
-        st.divider()
+
+            for toko in item["toko"]:
+
+                harga = toko.get(
+                    "harga",
+                    0
+                )
+
+                try:
+
+                    harga = int(harga)
+
+                except:
+
+                    harga = 0
+
+
+                st.markdown(
+                    f"""
+**🏪 {toko['toko']}**
+
+<span style="font-size:0.82rem;color:gray;">
+📦 {toko['stok']}
+&nbsp;&nbsp; • &nbsp;&nbsp;
+💰 Rp {harga:,.0f}
+&nbsp;&nbsp; • &nbsp;&nbsp;
+{toko['status']}
+</span>
+""",
+                    unsafe_allow_html=True
+                )
