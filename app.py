@@ -57,8 +57,6 @@ if st.button("SCAN SEMUA TOKO"):
                             key,
                             current_stock,
                         )
-                            
-                        history[key] = current_stock
                         
                         list_data.append({
                             "Produk": nama_produk,
@@ -66,6 +64,8 @@ if st.button("SCAN SEMUA TOKO"):
                             "Status": status,
                             "Harga": f"Rp {p.get('finalPrice', 0):,.0f}"
                         })
+
+                        history[key] = current_stock
                     st.table(pd.DataFrame(list_data))
                 else:
                     st.write("Stok kosong.")
