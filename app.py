@@ -5,14 +5,7 @@ from google.oauth2.service_account import Credentials
 
 def connect_to_sheets():
     try:
-        # Ambil credential dari Streamlit Secrets
-        creds_json = st.secrets["gcp_service_account"]
-
-        # Jika berupa string JSON, ubah menjadi dictionary
-        if isinstance(creds_json, str):
-            creds_dict = json.loads(creds_json)
-        else:
-            creds_dict = dict(creds_json)
+        creds_dict = dict(st.secrets["gcp_service_account"])
 
         scopes = [
             "https://www.googleapis.com/auth/spreadsheets",
@@ -26,13 +19,12 @@ def connect_to_sheets():
 
         client = gspread.authorize(creds)
 
-        sheet = client.open("HotWheelsDB").worksheet("Sheet1")
-
-        return sheet
+        return client.open("HotWheelsDB").worksheet("Sheet1")
 
     except Exception as e:
-        st.error(f"Gagal koneksi Google Sheets:\n{e}")
+        st.error(f"Gagal koneksi Google Sheets: {e}")
         return None
+        
 # 2. LOAD - Menggunakan list murni, ANTI ERROR
 def load_history():
 
