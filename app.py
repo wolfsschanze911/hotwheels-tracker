@@ -45,12 +45,7 @@ dashboard_placeholder = st.empty()
 # BUTTON
 # ==========================================
 
-if st.button(
-    "🚀 SCAN SEMUA TOKO",
-    use_container_width=True
-):
-
-    if st.session_state.scan_running:
+if st.session_state.scan_running:
 
     button_text = "⏳ SCANNING..."
 
@@ -76,20 +71,12 @@ if st.button(
         st.session_state.scan_running = False
 
 
-    thread = threading.Thread(
-        target=run_scan
-    )
-
-    thread.start()
-
 
     thread = threading.Thread(
         target=run_scan
     )
 
     thread.start()
-
-
 
 # ==========================================
 # LIVE UPDATE
