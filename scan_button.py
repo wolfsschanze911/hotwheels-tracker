@@ -22,7 +22,7 @@ def render_scan_button():
     if running:
 
         st.button(
-            "🟡 Scan berjalan...",
+            "🔄 Please Wait...",
             disabled=True,
             use_container_width=True
         )
@@ -32,7 +32,7 @@ def render_scan_button():
 
 
     if st.button(
-        "🚗 Mulai Scan",
+        "🚀 Start Scan",
         use_container_width=True
     ):
 
