@@ -7,10 +7,6 @@ from config import DAFTAR_TOKO
 from history import load_history, save_history
 from scanner import scan_store
 from compare import compare_stock
-import streamlit as st
-
-st.write("Secrets tersedia:", list(st.secrets.keys()))
-
 
 st.set_page_config(
     page_title="Hot Wheels Tracker",
