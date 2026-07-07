@@ -162,4 +162,6 @@ if st.button("🚀 SCAN SEMUA TOKO", use_container_width=True):
 
     st.success("✅ Scan selesai")
 
-    st.rerun()
+    st.session_state.dashboard = {...}
+
+    st.session_state.scan_result = [...]
