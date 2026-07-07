@@ -32,4 +32,15 @@ def update_state(**kwargs):
 
 def get_state():
     
+scan_results = []
+[
+ {
+  "produk":"67 CAMARO",
+  "toko":"ALFAMART A",
+  "stok":2,
+  "harga":35000,
+  "status":"🆕 Baru"
+ }
+]
+    
     return scan_state
