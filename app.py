@@ -1,60 +1,93 @@
-import pandas as pd
-import streamlit as st
+import json
 import gspread
+import streamlit as st
 from google.oauth2.service_account import Credentials
-import requests 
-import urllib.parse # Sesuaikan dengan library request yang Anda pakai
 
-# 1. Koneksi (Pastikan ini tetap ada)
 def connect_to_sheets():
-    creds_dict = st.secrets["gcp_service_account"]
-    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-    client = gspread.authorize(creds)
-    # Sesuaikan "Sheet1" dengan nama tab di file Anda
-    return client.open("HotWheelsDB").worksheet("Sheet1")
+    try:
+        # Ambil credential dari Streamlit Secrets
+        creds_json = st.secrets["gcp_service_account"]
 
+        # Jika berupa string JSON, ubah menjadi dictionary
+        if isinstance(creds_json, str):
+            creds_dict = json.loads(creds_json)
+        else:
+            creds_dict = dict(creds_json)
+
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive",
+        ]
+
+        creds = Credentials.from_service_account_info(
+            creds_dict,
+            scopes=scopes
+        )
+
+        client = gspread.authorize(creds)
+
+        sheet = client.open("HotWheelsDB").worksheet("Sheet1")
+
+        return sheet
+
+    except Exception as e:
+        st.error(f"Gagal koneksi Google Sheets:\n{e}")
+        return None
 # 2. LOAD - Menggunakan list murni, ANTI ERROR
 def load_history():
-    try:
-        sheet = connect_to_sheets()
-        # Kita ambil data mentah
-        data = sheet.get_all_values()
-        
-        # Pengecekan detektif
-        st.write(f"DEBUG: Tipe data yang diterima: {type(data)}")
-        
-        if not isinstance(data, list):
-            st.error(f"Ternyata datanya bukan list! Ini isinya: {data}")
-            return {}
 
-        # Lanjut proses
-        history = {}
-        for row in data[1:]:
-            if len(row) >= 2:
-                history[str(row[0])] = int(row[1])
+    history = {}
+
+    sheet = connect_to_sheets()
+
+    if sheet is None:
         return history
-        
+
+    try:
+
+        rows = sheet.get_all_records()
+
+        for row in rows:
+
+            key = str(row.get("Key", "")).strip()
+
+            stock = int(row.get("Stock", 0))
+
+            history[key] = stock
+
+        return history
+
     except Exception as e:
-        st.error(f"Error di load_history: {e}")
-        return {}
+
+        st.error(f"load_history gagal : {e}")
+
+        return history
 
 # 3. SAVE - Menulis ulang sheet secara bersih
 def save_history(history):
+
+    sheet = connect_to_sheets()
+
+    if sheet is None:
+        return
+
     try:
-        sheet = connect_to_sheets()
-        sheet.clear() # Kosongkan sheet dulu
-        
-        # Buat list data (Header + Isi)
-        data = [["Key", "Stock"]]
-        for key, val in history.items():
-            data.append([key, val])
-        
-        # Tulis ke sel A1 (menggunakan update agar langsung tertulis semua)
-        sheet.update(range_name='A1', values=data)
-        st.success("Data berhasil tersimpan ke Sheets!")
+
+        rows = [["Key", "Stock"]]
+
+        for key, stock in history.items():
+
+            rows.append([key, stock])
+
+        sheet.clear()
+
+        sheet.update("A1", rows)
+
+        st.success("History berhasil disimpan.")
+
     except Exception as e:
-        st.error(f"Gagal simpan: {e}")
+
+        st.error(f"Save gagal : {e}")
 
 # --- KONFIGURASI TOKO & HEADERS ---
 # Data dari skrip kerja Anda
