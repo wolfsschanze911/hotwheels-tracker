@@ -2,13 +2,7 @@ import streamlit as st
 from datetime import datetime
 
 
-def dashboard(
-    total_toko,
-    total_produk,
-    baru,
-    naik,
-    turun,
-):
+def dashboard(total_toko, total_produk, baru, naik, turun):
 
     html = f"""
     <div style="
@@ -40,13 +34,11 @@ def dashboard(
             flex-wrap:wrap;
             gap:8px;
         ">
-
             <div>🏪 <b>{total_toko}</b> Toko</div>
             <div>🚗 <b>{total_produk}</b> Produk</div>
             <div>🆕 <b>{baru}</b> Baru</div>
             <div>🟢 <b>{naik}</b> Naik</div>
             <div>🔴 <b>{turun}</b> Turun</div>
-
         </div>
 
     </div>
