@@ -146,7 +146,7 @@ return True
     save_history(history)
 
 
-    update_state(
+    pdate_state(
 
         status="🟢 Scan selesai",
 
@@ -155,4 +155,6 @@ return True
 
         progress=100
     )
+
+    return True
     
