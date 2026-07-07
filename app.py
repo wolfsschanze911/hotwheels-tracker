@@ -63,7 +63,12 @@ if st.button("SCAN SEMUA TOKO"):
                         nama_produk = p.get("productName", "N/A")
                         current_stock = p.get("stock", 0)
 
-                        key = f"{toko['nama']}_{nama_produk}"
+                        nama_toko = " ".join(toko["nama"].split()).upper()
+                        nama_produk = " ".join(
+                            p.get("productName", "N/A").split()
+                        ).upper()
+
+                        key = f"{nama_toko}_{nama_produk}"
 
                         status, prev_stock, diff = compare_stock(
                             history,
