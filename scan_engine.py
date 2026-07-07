@@ -115,14 +115,11 @@ def process_products(
 
 
 
-        scan_results.append({
+        result = {
 
             "produk": product_name,
-
             "toko": store_name,
-
             "stok": stock,
-
             "harga": product.get(
                 "finalPrice",
                 0
@@ -130,29 +127,24 @@ def process_products(
 
             "status": status
 
-        })
+        }
+
+        scan_results.append(result)
+
+
 # ==============================
 # Live Update Feed
 # ==============================
 
-        if status != "➖ Tetap":
+if status != "➖ Tetap":
 
-            add_update({
+    update = result.copy()
 
-                "produk": product_name,
+    update["stok_lama"] = prev
 
-                "toko": store_name,
+    update["perubahan"] = diff
 
-                "stok": stock,
-
-                "harga": product.get(
-                    "finalPrice",
-                    0
-                ),
-
-                "status": status
-
-            })
+    add_update(update)
 
 
 
