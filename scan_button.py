@@ -4,6 +4,7 @@ from scan_engine import start_scan
 from state import scan_state
 
 
+
 def render_scan_button():
 
     running = scan_state.get(
@@ -23,9 +24,23 @@ def render_scan_button():
         return
 
 
+
     if st.button(
         "🚗 Mulai Scan",
         use_container_width=True
     ):
+
+        st.session_state["start_scan"] = True
+
+        st.rerun()
+
+
+
+    if st.session_state.get(
+        "start_scan",
+        False
+    ):
+
+        st.session_state["start_scan"] = False
 
         start_scan()
