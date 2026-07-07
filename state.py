@@ -1,50 +1,53 @@
-import streamlit as st
+# ==========================================
+# GLOBAL SCAN STATE
+# ==========================================
+
+scan_state = {
+
+    # Scan status
+    "running": False,
+    "status": "⚪ Idle",
+    "last_scan": "-",
+
+    # Progress
+    "stores_done": 0,
+    "stores_total": 0,
+    "progress": 0,
+
+    # Statistics
+    "cars_found": 0,
+    "new_items": 0,
+    "price_down": 0,
+    "price_up": 0
+}
+
 
 
 # ==========================================
-# INIT SESSION STATE
+# HASIL SCAN TERBARU
+# Dipakai Search & Save History
 # ==========================================
 
-def init_state():
+scan_results = []
 
-    if "scan_state" not in st.session_state:
-
-        st.session_state.scan_state = {
-
-            "running": False,
-            "status": "⚪ Idle",
-            "last_scan": "-",
-
-            "stores_done": 0,
-            "stores_total": 0,
-            "progress": 0,
-
-            "cars_found": 0,
-            "new_items": 0,
-            "price_down": 0,
-            "price_up": 0
-        }
-
-
-    if "scan_results" not in st.session_state:
-
-        st.session_state.scan_results = []
-
-
-    if "update_feed" not in st.session_state:
-
-        st.session_state.update_feed = []
 
 
 # ==========================================
-# RESET
+# LIVE UPDATE FEED
+# Dipakai Latest Updates
+# ==========================================
+
+update_feed = []
+
+
+
+# ==========================================
+# RESET SEMUA DATA SCAN
 # ==========================================
 
 def reset_state():
 
-    init_state()
-
-    st.session_state.scan_state.update({
+    scan_state.update({
 
         "running": False,
 
@@ -65,23 +68,22 @@ def reset_state():
         "price_down": 0,
 
         "price_up": 0
-
     })
 
-    st.session_state.scan_results.clear()
 
-    st.session_state.update_feed.clear()
+    scan_results.clear()
+
+    update_feed.clear()
+
 
 
 # ==========================================
-# START SCAN
+# MULAI SCAN
 # ==========================================
 
 def start_scan_state(total_store=0):
 
-    init_state()
-
-    st.session_state.scan_state.update({
+    scan_state.update({
 
         "running": True,
 
@@ -102,23 +104,22 @@ def start_scan_state(total_store=0):
         "price_down": 0,
 
         "price_up": 0
-
     })
 
-    st.session_state.scan_results.clear()
 
-    st.session_state.update_feed.clear()
+    scan_results.clear()
+
+    update_feed.clear()
+
 
 
 # ==========================================
-# FINISH SCAN
+# SELESAI SCAN
 # ==========================================
 
 def finish_scan_state(last_scan):
 
-    init_state()
-
-    st.session_state.scan_state.update({
+    scan_state.update({
 
         "running": False,
 
@@ -127,74 +128,70 @@ def finish_scan_state(last_scan):
         "last_scan": last_scan,
 
         "progress": 100
-
     })
 
 
+
 # ==========================================
-# UPDATE STATE
+# UPDATE DASHBOARD
 # ==========================================
 
 def update_state(**kwargs):
 
-    init_state()
-
     for key, value in kwargs.items():
 
-        if key in st.session_state.scan_state:
+        if key in scan_state:
 
-            st.session_state.scan_state[key] = value
+            scan_state[key] = value
+
 
 
 # ==========================================
-# RESULT
+# TAMBAH HASIL SCAN
 # ==========================================
 
 def add_scan_result(result):
 
-    init_state()
+    scan_results.append(
+        result
+    )
 
-    st.session_state.scan_results.append(result)
 
 
 # ==========================================
-# UPDATE FEED
+# TAMBAH UPDATE TERBARU
 # ==========================================
 
 def add_update(item):
 
-    init_state()
-
-    st.session_state.update_feed.insert(
+    update_feed.insert(
         0,
         item
     )
 
-    if len(st.session_state.update_feed) > 50:
 
-        st.session_state.update_feed.pop()
+    if len(update_feed) > 50:
+
+        update_feed.pop()
+
 
 
 # ==========================================
 # GETTER
 # ==========================================
 
-def get_scan_state():
-
-    init_state()
-
-    return st.session_state.scan_state
-
-
 def get_scan_results():
 
-    init_state()
+    return scan_results
 
-    return st.session_state.scan_results
 
 
 def get_update_feed():
 
-    init_state()
+    return update_feed
 
-    return st.session_state.update_feed
+
+
+def get_scan_state():
+
+    return scan_state
