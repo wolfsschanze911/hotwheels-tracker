@@ -16,14 +16,24 @@ st.set_page_config(
 
 st.title("🚗 Alfagift Hotwheels Live Tracker")
 
-def dashboard(total_toko, total_produk, baru, naik, turun):
-    st.markdown(
-        """
-        <h2 style="color:red;">🚗 Hot Wheels Tracker</h2>
-        <p>Status : Scan selesai</p>
-        """,
-        unsafe_allow_html=True,
-    )
+with st.container(border=True):
+    st.subheader("🚗 Hot Wheels Tracker")
+
+    col1, col2 = st.columns(2)
+    col1.write("🟢 Status")
+    col1.success("Scan selesai")
+
+    col2.write("🕒 Last Scan")
+    col2.info(last_scan)
+
+    st.divider()
+
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("🏪 Toko", total_toko)
+    c2.metric("🚗 Produk", total_produk)
+    c3.metric("🆕 Baru", baru)
+    c4.metric("🟢 Naik", naik)
+    c5.metric("🔴 Turun", turun)
 
 if st.button("SCAN SEMUA TOKO"):
 
