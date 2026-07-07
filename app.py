@@ -3,7 +3,8 @@ import gspread
 import streamlit as st
 from google.oauth2.service_account import Credentials
 
-def connect_to_sheets():
+def connect_to_sheets(): 
+    st.write(type(st.secrets["gcp_service_account"]))
     try:
         creds_dict = dict(st.secrets["gcp_service_account"])
 
