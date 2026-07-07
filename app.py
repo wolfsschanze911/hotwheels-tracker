@@ -35,11 +35,24 @@ else:
 # BUTTON
 # ==========================================
 
+if scan_state["running"]:
+
+    button_text = "⏳ SCANNING..."
+
+else:
+
+    button_text = "🚀 SCAN SEMUA TOKO"
+
+
+
 if st.button(
     button_text,
     use_container_width=True,
-    disabled=status.startswith("🟡")
+    disabled=scan_state["running"]
 ):
+
+    scan_state["running"] = True
+
 
     thread = threading.Thread(
         target=start_scan,
@@ -47,6 +60,8 @@ if st.button(
     )
 
     thread.start()
+
+
     st.rerun()
 
 # ==========================================
