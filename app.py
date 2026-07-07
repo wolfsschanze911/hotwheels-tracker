@@ -30,9 +30,9 @@ st.set_page_config(
 
 st.markdown(
     """
-# 🚗 Hot Wheels Tracker
+# WOLFSSCHANZE HW PROJECT
 
-Monitor stok Hot Wheels secara realtime.
+Monitoring stok Hot Wheels Alfagift.
 """
 )
 
