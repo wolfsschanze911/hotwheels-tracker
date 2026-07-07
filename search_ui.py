@@ -77,17 +77,10 @@ def render_search():
                     harga = 0
 
 
-                st.markdown(
-                    f"""
-**🏪 {toko['toko']}**
+                st.markdown(f"**🏪 {toko['toko']}**")
 
-<span style="font-size:0.82rem;color:gray;">
-📦 {toko['stok']}
-&nbsp;&nbsp; • &nbsp;&nbsp;
-💰 Rp {harga:,.0f}
-&nbsp;&nbsp; • &nbsp;&nbsp;
-{toko['status']}
-</span>
-""",
-                    unsafe_allow_html=True
-                )
+c1, c2, c3 = st.columns([1,2,1])
+
+c1.caption(f"📦 {toko['stok']}")
+c2.caption(f"💰 Rp {harga:,.0f}")
+c3.caption(toko["status"])
