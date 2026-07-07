@@ -14,6 +14,9 @@ from state import (
 
 
 def start_scan():
+
+    scan_state["running"] = True
+
     reset_state()
 
     # pastikan running tetap aktif setelah reset
@@ -110,12 +113,14 @@ def start_scan():
     update_state(
 
         status="🟢 Scan selesai",
+
         last_scan=datetime.now(
             timezone(timedelta(hours=7))
         )
         .strftime("%d %b %Y %H:%M WIB"),
+
         progress=100
-    )
+        )
 
 
-    scan_state["running"] = False
+scan_state["running"] = False
