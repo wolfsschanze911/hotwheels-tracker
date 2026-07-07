@@ -40,15 +40,19 @@ if "dashboard" not in st.session_state:
 # ==========================================
 # DASHBOARD
 # ==========================================
-
-dashboard(
-    total_toko=len(DAFTAR_TOKO),
-    total_produk=st.session_state.dashboard["total_produk"],
-    total_baru=st.session_state.dashboard["baru"],
-    total_naik=st.session_state.dashboard["naik"],
-    total_turun=st.session_state.dashboard["turun"],
-    status=st.session_state.dashboard["status"],
-)
+dashboard_placeholder = st.empty()
+with dashboard_placeholder:
+    dashboard(
+        total_toko=len(DAFTAR_TOKO),
+        scanned_toko=st.session_state.dashboard["scanned"],
+        total_produk=st.session_state.dashboard["produk"],
+        total_baru=st.session_state.dashboard["baru"],
+        total_naik=st.session_state.dashboard["naik"],
+        total_turun=st.session_state.dashboard["turun"],
+        progress=st.session_state.dashboard["progress"],
+        status=st.session_state.dashboard["status"],
+        last_scan=st.session_state.dashboard["last_scan"],
+    )
 
 st.divider()
 
