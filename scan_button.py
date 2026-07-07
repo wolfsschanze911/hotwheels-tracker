@@ -1,20 +1,35 @@
 import streamlit as st
+
 from scan_engine import start_scan
 from state import scan_state
 
 
-def render_scan_button(refresh=None):
+def render_scan_button():
 
-    if scan_state["running"]:
-        text = "⏳ SCANNING..."
-        disabled = True
-    else:
-        text = "🚀 SCAN SEMUA TOKO"
-        disabled = False
+    st.markdown("## 🔍 Scanner")
+
+
+    is_running = scan_state.get(
+        "running",
+        False
+    )
+
+
+    if is_running:
+
+        st.warning(
+            "🟡 Scan sedang berjalan..."
+        )
+
+        return
+
+
 
     if st.button(
-        text,
-        use_container_width=True,
-        disabled=disabled
+        "🚗 Mulai Scan",
+        use_container_width=True
     ):
-        start_scan(refresh=refresh)
+
+        start_scan(
+            refresh=st.rerun
+        )
