@@ -1,73 +1,57 @@
 import streamlit as st
 
-from search_engine import search_product
-
+from search_engine import search
 
 
 def render_search():
 
     st.markdown("## 🔎 Search Hot Wheels")
 
-
     keyword = st.text_input(
         "",
-        placeholder="Cari nama mobil atau toko..."
+        placeholder="Cari nama Hot Wheels..."
     )
 
+    if not keyword:
+        return
 
-    if keyword:
+    results = search(keyword)
 
-        results = search_product(keyword)
+    if not results:
+        st.info("Tidak ada hasil ditemukan.")
+        return
 
+    st.caption(f"Ditemukan {len(results)} produk")
 
-        if not results:
+    for product in results:
 
-            st.info(
-                "Tidak ada hasil ditemukan."
+        with st.container(border=True):
+
+            st.markdown(
+                f"""
+### 🚗 {product["produk"]}
+
+📍 **Tersedia di {product["jumlah_toko"]} toko**
+"""
             )
 
-            return
+            for store in product["toko"]:
 
-
-
-        st.caption(
-            f"Ditemukan {len(results)} item"
-        )
-
-
-        for item in results:
-
-
-            harga = item.get(
-                "harga",
-                0
-            )
-
-
-            try:
-
-                harga = int(harga)
-
-            except:
-
-                harga = 0
-
-
-
-            with st.container(border=True):
+                try:
+                    price = int(store.get("harga", 0))
+                except (TypeError, ValueError):
+                    price = 0
 
                 st.markdown(
-
                     f"""
-                    🚗 **{item.get("produk","-")}**
+🏪 **{store["toko"]}**
 
-                    🏪 {item.get("toko","-")}
+📦 Stok : **{store["stok"]}**
 
-                    📦 Stok : **{item.get("stok",0)}**
+💰 Rp {price:,.0f}
 
-                    💰 Harga : **Rp {harga:,.0f}**
+{store["status"]}
 
-                    {item.get("status","")}
-                    """
-
+---
+"""
                 )
