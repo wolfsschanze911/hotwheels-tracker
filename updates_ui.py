@@ -2,52 +2,71 @@ import streamlit as st
 
 
 def render_updates(results):
-    """
-    Menampilkan daftar perubahan stok terbaru.
-    """
 
-    st.markdown("## 📈 Stock Updates")
+    st.markdown(
+        "## 🔥 Latest Updates"
+    )
+
 
     if not results:
-        st.info("Belum ada hasil scan.")
+
+        st.caption(
+            "Belum ada update stok."
+        )
+
         return
+
 
     updates = [
         item
         for item in results
-        if item["status"] != "➖ Tetap"
+        if item.get("status") != "➖ Tetap"
     ]
 
+
     if not updates:
-        st.success("Tidak ada perubahan stok.")
+
+        st.success(
+            "Tidak ada perubahan stok."
+        )
+
         return
 
-    updates.sort(
-        key=lambda item: item["stok"],
-        reverse=True
-    )
 
-    st.caption(f"{len(updates)} perubahan ditemukan")
+    # tampilkan update terbaru di atas
+    updates = updates[::-1]
 
-    for item in updates:
 
-        try:
-            price = int(item.get("harga", 0))
-        except (TypeError, ValueError):
-            price = 0
+    for item in updates[:20]:
 
-        with st.container(border=True):
+        product = item.get(
+            "produk",
+            "-"
+        )
 
-            st.markdown(
-                f"""
-### 🚗 {item["produk"]}
+        store = item.get(
+            "toko",
+            "-"
+        )
 
-🏪 **{item["toko"]}**
+        stock = item.get(
+            "stok",
+            0
+        )
 
-📦 Stok : **{item["stok"]}**
+        status = item.get(
+            "status",
+            ""
+        )
 
-💰 Rp {price:,.0f}
 
-{item["status"]}
+        st.markdown(
+            f"""
+🚗 **{product}**
+
+🏪 {store}
+📦 Stok : **{stock}** {status}
+
+---
 """
-            )
+        )
