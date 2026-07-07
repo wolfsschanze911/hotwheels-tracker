@@ -14,6 +14,7 @@ from history import (
     load_history,
     save_history,
 )
+from scanner import scan_store 
 
 def connect_to_sheets():
     try:
@@ -136,20 +137,8 @@ if st.button("SCAN SEMUA TOKO"):
 
     for i, toko in enumerate(daftar_toko_depok):
         try:
-            # 1. Setup headers
-            headers_toko = HEADERS.copy()
-            headers_toko.update({'storecode': toko['storecode'], 'fccode': toko['fccode']})
-            
-            # 2. AMBIL DATA DULU (Penting!)
-            response = requests.get(url_pencarian, headers=headers_toko, timeout=5)
-            
-            if response.status_code == 200:
-                data = response.json()
-                # 3. Definisikan stok_tersedia DI SINI
-                products = data.get("products", []) or data.get("data", {}).get("products", [])
-                stok_tersedia = [p for p in products if p.get("stock", 0) > 0]
-            else:
-                stok_tersedia = [] # Kalau gagal, kosongkan saja supaya tidak error
+            products = scan_store(toko)
+            stok_tersedia = [p for p in products if p.get("stock", 0) > 0]
 
             # 4. Baru tampilkan UI (Tombol Maps & Expander)
             col1, col2 = st.columns([3, 1])
