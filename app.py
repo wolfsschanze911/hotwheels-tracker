@@ -19,9 +19,9 @@ st.title("🚗 Alfagift Hotwheels Live Tracker")
 dashboard(
     total_toko=15,
     total_produk=163,
-    baru=3,
-    naik=8,
-    turun=2,
+    total_baru=3,
+    total_naik=8,
+    total_turun=2,
 )
 
 if st.button("SCAN SEMUA TOKO"):
