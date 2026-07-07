@@ -9,21 +9,21 @@ def connect_to_sheets():
         creds_dict = dict(st.secrets["gcp_service_account"])
 
         scopes = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive",
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive",
         ]
 
         creds = Credentials.from_service_account_info(
-        creds_dict,
-        scopes=scopes
+            creds_dict,
+            scopes=scopes,
         )
 
         client = gspread.authorize(creds)
 
         return client.open("HotWheelsDB").worksheet("Sheet1")
 
-        except Exception as e:
-                st.error(f"Gagal koneksi Google Sheets: {e}")
+    except Exception as e:
+        st.error(f"Gagal koneksi Google Sheets: {e}")
         return None
         
 # 2. LOAD - Menggunakan list murni, ANTI ERROR
