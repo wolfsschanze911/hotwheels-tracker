@@ -31,7 +31,7 @@ def start_scan():
 
 
     update_state(
-        status="Preparing scan...",
+        🟡 status="Preparing scan...",
         stores_total=total_toko
     )
 
@@ -44,7 +44,7 @@ def start_scan():
 
 
             update_state(
-                status=f"Scanning {nama_toko}..."
+                🟡 status=f"Scanning {nama_toko}..."
             )
 
 
@@ -150,7 +150,7 @@ def start_scan():
 
     update_state(
 
-        status="Scan selesai",
+        🟢 status="Scan selesai",
 
         last_scan=datetime.now()
         .strftime("%d %b %Y %H:%M"),
