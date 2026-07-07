@@ -10,6 +10,10 @@ from config import (
     SPREADSHEET_NAME,
     WORKSHEET_NAME,
 )
+from history import (
+    load_history,
+    save_history,
+)
 
 def connect_to_sheets():
     try:
