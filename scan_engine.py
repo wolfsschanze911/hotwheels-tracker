@@ -8,8 +8,7 @@ from history import load_history, save_history
 
 from state import (
     reset_state,
-    update_state,
-    scan_state
+    update_state
 )
 
 
