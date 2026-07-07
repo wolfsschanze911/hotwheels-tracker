@@ -15,54 +15,33 @@ st.set_page_config(
     layout="centered"
 )
 
+
 # ==========================================
 # TITLE
 # ==========================================
 
 st.title("WOLFSSCHANZE HW PROJECT")
 
-# ==========================================
-# BUTTON STATUS
-# ==========================================
-
-status = scan_state["status"]
-if status.startswith("🟡"):
-    button_text = "⏳ SCANNING..."
-else:
-    button_text = "🚀 SCAN SEMUA TOKO"
 
 # ==========================================
 # BUTTON
 # ==========================================
 
 if scan_state["running"]:
-
     button_text = "⏳ SCANNING..."
-
 else:
-
     button_text = "🚀 SCAN SEMUA TOKO"
-
-
-
 if st.button(
     button_text,
     use_container_width=True,
     disabled=scan_state["running"]
 ):
-
-    scan_state["running"] = True
-
-
     thread = threading.Thread(
         target=start_scan,
         daemon=True
     )
-
+    
     thread.start()
-
-
-    st.rerun()
 
 # ==========================================
 # DASHBOARD
