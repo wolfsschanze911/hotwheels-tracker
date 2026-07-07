@@ -111,6 +111,6 @@ def start_scan():
             timezone(timedelta(hours=7))
         )
         .strftime("%d %b %Y %H:%M WIB"),
-        
+    )
 
     return True
