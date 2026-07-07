@@ -1,76 +1,39 @@
 import streamlit as st
-import time
 
 from dashboard import render_dashboard
-from scan_engine import start_scan
-from search_ui import render_search
+from scan_button import render_scan_button
 
-
-# ==========================================
-# PAGE CONFIG
-# ==========================================
+# nanti
+# from search_ui import render_search
+# from updates_ui import render_updates
 
 st.set_page_config(
     page_title="Hot Wheels Tracker",
     layout="centered"
 )
 
-
-# ==========================================
-# TITLE
-# ==========================================
-
 st.title("WOLFSSCHANZE HW PROJECT")
 
+# Dashboard
+render_dashboard()
 
-# ==========================================
-# DASHBOARD PLACEHOLDER
-# ==========================================
+# Tombol Scan
+render_scan_button()
 
-dashboard_placeholder = st.empty()
+st.divider()
 
+# Placeholder Search
+st.subheader("🔎 Search Hot Wheels")
 
+st.text_input(
+    "",
+    placeholder="Cari seri Hot Wheels...",
+    label_visibility="collapsed"
+)
 
-def refresh_dashboard():
+st.divider()
 
-    with dashboard_placeholder.container():
+# Placeholder Update
+st.subheader("📢 Update Terbaru")
 
-        render_dashboard()
-        st.divider()
-
-        render_search()
-
-
-
-# ==========================================
-# INITIAL DASHBOARD
-# ==========================================
-
-refresh_dashboard()
-
-
-
-# ==========================================
-# SCAN BUTTON
-# ==========================================
-
-if st.button(
-    "🚀 SCAN SEMUA TOKO",
-    use_container_width=True
-):
-
-
-    def refresh():
-
-        refresh_dashboard()
-
-        time.sleep(0.1)
-
-
-
-    start_scan(
-        refresh=refresh
-    )
-
-
-    refresh_dashboard()
+st.info("Belum ada update.")
