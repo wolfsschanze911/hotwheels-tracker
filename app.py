@@ -40,6 +40,7 @@ if "dashboard" not in st.session_state:
 # ==========================================
 # DASHBOARD
 # ==========================================
+
 dashboard_placeholder = st.empty()
 with dashboard_placeholder:
     dashboard(
@@ -70,7 +71,8 @@ if st.button("🚀 SCAN SEMUA TOKO", use_container_width=True):
     total_turun = 0
 
     progress = st.progress(0)
-
+    st.session_state.dashboard["status"] = "🟡 Scanning..."
+    
     for i, toko in enumerate(DAFTAR_TOKO):
 
         try:
