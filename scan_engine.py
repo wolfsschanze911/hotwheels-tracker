@@ -1,4 +1,5 @@
 import time
+from state import scan_results
 from datetime import datetime, timezone, timedelta
 
 from config import DAFTAR_TOKO
@@ -18,6 +19,7 @@ def start_scan(refresh=None):
     scan_state["running"] = True
 
     reset_state()
+    scan_results.clear()
 
     scan_state["running"] = True
 
@@ -75,57 +77,50 @@ def start_scan(refresh=None):
 
                 for p in stok_tersedia:
 
-
                     nama_produk = " ".join(
                         p.get("productName", "").split()
                     ).upper()
 
-
                     nama_toko_clean = " ".join(
                         nama_toko.split()
                     ).upper()
-
 
                     current_stock = p.get(
                         "stock",
                         0
                     )
 
-
                     key = (
                         f"{nama_toko_clean}_"
                         f"{nama_produk}"
                     )
-
 
                     status, prev_stock, diff = compare_stock(
                         history,
                         key,
                         current_stock
                     )
-
-
+                    
                     total_produk += 1
-
-
                     if status == "🆕 Baru":
-
                         total_baru += 1
-
-
                     elif status.startswith("🟢"):
-
                         total_naik += 1
-
-
                     elif status.startswith("🔴"):
-
                         total_turun += 1
-
-
+                    
                     history[key] = current_stock
-
-
+                
+                    scan_results.append({
+                        "produk": nama_produk,
+                        "toko": nama_toko,
+                        "stok": current_stock,
+                        "harga": p.get(
+                            "finalPrice",
+                            0
+                        ),
+                        "status": status
+                    })
 
                 update_state(
 
@@ -142,15 +137,10 @@ def start_scan(refresh=None):
                     progress=int(
                         ((i + 1) / total_toko) * 100
                     )
-
                 )
 
-
                 if refresh:
-
                     refresh()
-
-
 
             except Exception as e:
 
@@ -158,34 +148,21 @@ def start_scan(refresh=None):
                     status=f"⚠️ Error {nama_toko}: {e}"
                 )
 
-
             time.sleep(0.3)
-
-
 
         save_history(history)
 
-
-
         update_state(
-
             status="🟢 Scan selesai",
-
             last_scan=datetime.now(
                 timezone(timedelta(hours=7))
             )
             .strftime("%d %b %Y %H:%M WIB"),
-
             progress=100
-
         )
 
-
         if refresh:
-
             refresh()
-
-
 
     finally:
 
