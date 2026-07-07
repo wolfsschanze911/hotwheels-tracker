@@ -1,172 +1,129 @@
-import time
-from datetime import datetime, timezone, timedelta
+from collections import defaultdict
 
-from config import DAFTAR_TOKO
-from scanner import scan_store
-from compare import compare_stock
-from history import load_history, save_history
-
-from state import (
-    reset_state,
-    update_state,
-    scan_state,
-    scan_results,
-)
+from state import scan_results
 
 
-# ==========================================
-# Helper
-# ==========================================
 
-def process_products(products, store_name, history, counters):
-    """
-    Memproses seluruh produk dari satu toko.
-    """
+def clean_product_name(name):
 
-    available_products = [
-        p for p in products
-        if p.get("stock", 0) > 0
+    name = name.upper()
+
+
+    remove_words = [
+        "HOT WHEELS",
+        "MAINAN MOBIL ANAK",
+        "MAINAN MOBIL",
+        "MAINAN",
+        "MOBIL",
+        "ANAK",
+        "ASSORTED",
     ]
 
-    store_key = " ".join(store_name.split()).upper()
 
-    for product in available_products:
+    for word in remove_words:
 
-        product_name = " ".join(
-            product.get("productName", "").split()
-        ).upper()
-
-        stock = product.get("stock", 0)
-
-        history_key = f"{store_key}_{product_name}"
-
-        status, previous_stock, diff = compare_stock(
-            history,
-            history_key,
-            stock
+        name = name.replace(
+            word,
+            ""
         )
 
-        history[history_key] = stock
 
-        counters["products"] += 1
-
-        if status == "🆕 Baru":
-            counters["new"] += 1
-
-        elif status.startswith("🟢"):
-            counters["up"] += 1
-
-        elif status.startswith("🔴"):
-            counters["down"] += 1
-
-        scan_results.append({
-            "produk": product_name,
-            "toko": store_name,
-            "stok": stock,
-            "harga": product.get("finalPrice", 0),
-            "status": status
-        })
-
-
-def refresh_dashboard(refresh):
-    if refresh:
-        refresh()
-
-
-# ==========================================
-# Main Scan
-# ==========================================
-
-def start_scan(refresh=None):
-
-    scan_state["running"] = True
-
-    reset_state()
-    scan_results.clear()
-
-    history = load_history()
-
-    total_store = len(DAFTAR_TOKO)
-
-    counters = {
-        "products": 0,
-        "new": 0,
-        "up": 0,
-        "down": 0,
-    }
-
-    update_state(
-        status="🟡 Preparing scan...",
-        stores_total=total_store,
-        progress=0
+    name = " ".join(
+        name.split()
     )
 
-    refresh_dashboard(refresh)
 
-    try:
+    return name.strip()
 
-        for index, store in enumerate(DAFTAR_TOKO, start=1):
 
-            store_name = store["nama"]
 
-            update_state(
-                status=f"🟡 Scanning {store_name}..."
-            )
+def search(keyword):
 
-            refresh_dashboard(refresh)
+    keyword = keyword.strip().lower()
 
-            try:
 
-                products = scan_store(store)
+    if not keyword:
 
-                process_products(
-                    products,
-                    store_name,
-                    history,
-                    counters
-                )
+        return []
 
-            except Exception as e:
 
-                update_state(
-                    status=f"⚠️ {store_name} gagal : {e}"
-                )
 
-                refresh_dashboard(refresh)
+    grouped_results = defaultdict(list)
 
-                continue
 
-            progress = int(
-                (index / total_store) * 100
-            )
 
-            update_state(
-                stores_done=index,
-                cars_found=counters["products"],
-                new_items=counters["new"],
-                price_down=counters["up"],
-                price_up=counters["down"],
-                progress=progress,
-            )
+    for item in scan_results:
 
-            refresh_dashboard(refresh)
 
-            time.sleep(0.2)
-
-        save_history(history)
-
-        update_state(
-            status="🟢 Scan selesai",
-            progress=100,
-            last_scan=datetime.now(
-                timezone(
-                    timedelta(hours=7)
-                )
-            ).strftime("%d %b %Y %H:%M WIB")
+        original_name = item.get(
+            "produk",
+            "-"
         )
 
-        refresh_dashboard(refresh)
 
-    finally:
+        clean_name = clean_product_name(
+            original_name
+        )
 
-        scan_state["running"] = False
+
+        if keyword not in clean_name.lower():
+
+            continue
+
+
+
+        item_copy = item.copy()
+
+
+        item_copy["produk"] = clean_name
+
+
+
+        grouped_results[clean_name].append(
+            item_copy
+        )
+
+
+
+    results = []
+
+
+
+    for product_name, stores in grouped_results.items():
+
+
+        stores.sort(
+            key=lambda item: item.get(
+                "stok",
+                0
+            ),
+            reverse=True
+        )
+
+
+        results.append(
+
+            {
+
+                "produk": product_name,
+
+                "jumlah_toko": len(stores),
+
+                "toko": stores
+
+            }
+
+        )
+
+
+
+    results.sort(
+
+        key=lambda item: item["jumlah_toko"],
+
+        reverse=True
+
+    )
+
+
+    return results
