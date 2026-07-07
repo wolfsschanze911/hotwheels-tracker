@@ -3,6 +3,7 @@ import time
 
 from dashboard import render_dashboard
 from scan_engine import start_scan
+from search_ui import render_search
 
 
 # ==========================================
@@ -35,6 +36,9 @@ def refresh_dashboard():
     with dashboard_placeholder.container():
 
         render_dashboard()
+        st.divider()
+
+        render_search()
 
 
 
