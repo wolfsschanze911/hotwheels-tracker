@@ -1,169 +1,50 @@
-import time
-from datetime import datetime, timezone, timedelta
+from collections import defaultdict
 
-from config import DAFTAR_TOKO
-from scanner import scan_store
-from compare import compare_stock
-from history import load_history, save_history
-
-from state import (
-    reset_state,
-    update_state,
-    scan_state,
-    scan_results
-)
+from state import scan_results
 
 
-def start_scan(refresh=None):
+def search(keyword):
 
-    scan_state["running"] = True
+    keyword = keyword.strip().lower()
 
-    reset_state()
-    scan_results.clear()
+    if keyword == "":
+        return []
 
-    scan_state["running"] = True
+    hasil = defaultdict(list)
 
+    for item in scan_results:
 
-    history = load_history()
+        nama = item["produk"].lower()
 
+        if keyword in nama:
 
-    total_produk = 0
-    total_baru = 0
-    total_naik = 0
-    total_turun = 0
+            hasil[item["produk"]].append(item)
 
+    response = []
 
-    total_toko = len(DAFTAR_TOKO)
+    for produk, toko in hasil.items():
 
-
-    update_state(
-        status="🟡 Preparing scan...",
-        stores_total=total_toko
-    )
-
-
-    if refresh:
-        refresh()
-
-
-    try:
-
-        for i, toko in enumerate(DAFTAR_TOKO):
-
-            nama_toko = toko["nama"]
-
-
-            try:
-
-                update_state(
-                    status=f"🟡 Scanning {nama_toko}..."
-                )
-
-
-                if refresh:
-                    refresh()
-
-
-
-                products = scan_store(toko)
-
-
-                stok_tersedia = [
-                    p for p in products
-                    if p.get("stock", 0) > 0
-                ]
-
-
-
-                for p in stok_tersedia:
-
-                    nama_produk = " ".join(
-                        p.get("productName", "").split()
-                    ).upper()
-
-                    nama_toko_clean = " ".join(
-                        nama_toko.split()
-                    ).upper()
-
-                    current_stock = p.get(
-                        "stock",
-                        0
-                    )
-
-                    key = (
-                        f"{nama_toko_clean}_"
-                        f"{nama_produk}"
-                    )
-
-                    status, prev_stock, diff = compare_stock(
-                        history,
-                        key,
-                        current_stock
-                    )
-                    
-                    total_produk += 1
-                    if status == "🆕 Baru":
-                        total_baru += 1
-                    elif status.startswith("🟢"):
-                        total_naik += 1
-                    elif status.startswith("🔴"):
-                        total_turun += 1
-                    
-                    history[key] = current_stock
-                
-                    scan_results.append({
-                        "produk": nama_produk,
-                        "toko": nama_toko,
-                        "stok": current_stock,
-                        "harga": p.get(
-                            "finalPrice",
-                            0
-                        ),
-                        "status": status
-                    })
-
-                update_state(
-
-                    stores_done=i + 1,
-
-                    cars_found=total_produk,
-
-                    new_items=total_baru,
-
-                    price_down=total_naik,
-
-                    price_up=total_turun,
-
-                    progress=int(
-                        ((i + 1) / total_toko) * 100
-                    )
-                )
-
-                if refresh:
-                    refresh()
-
-            except Exception as e:
-
-                update_state(
-                    status=f"⚠️ Error {nama_toko}: {e}"
-                )
-
-            time.sleep(0.3)
-
-        save_history(history)
-
-        update_state(
-            status="🟢 Scan selesai",
-            last_scan=datetime.now(
-                timezone(timedelta(hours=7))
-            )
-            .strftime("%d %b %Y %H:%M WIB"),
-            progress=100
+        toko.sort(
+            key=lambda x: x["stok"],
+            reverse=True
         )
 
-        if refresh:
-            refresh()
+        response.append({
 
-    finally:
+            "produk": produk,
 
-        scan_state["running"] = False
+            "jumlah_toko": len(toko),
+
+            "toko": toko
+
+        })
+
+    response.sort(
+
+        key=lambda x: x["jumlah_toko"],
+
+        reverse=True
+
+    )
+
+    return response
