@@ -180,11 +180,17 @@ def save_history(history):
 
     except Exception as e:
 
-        print(
-            "DETAIL SAVE ERROR:",
-            repr(e)
-        )
+        import traceback
+
+        error_detail = traceback.format_exc()
 
         raise Exception(
-            f"Save gagal : {e}"
+        f"""
+    Save gagal:
+
+    {str(e)}
+
+    DETAIL:
+    {error_detail}
+    """
         )
