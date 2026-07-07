@@ -4,23 +4,23 @@ import streamlit as st
 from google.oauth2.service_account import Credentials
 import requests
 
-def connect_to_sheets(): 
-    try:
-        creds_dict = dict(st.secrets["gcp_service_account"])
+def connect_to_sheets():
 
-        scopes = [
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive",
-        ]
+    creds_dict = dict(st.secrets["gcp_service_account"])
 
-        creds = Credentials.from_service_account_info(
-            creds_dict,
-            scopes=scopes
-        )
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive",
+    ]
 
-        client = gspread.authorize(creds)
+    creds = Credentials.from_service_account_info(
+        creds_dict,
+        scopes=scopes
+    )
 
-        return client.open("HotWheelsDB").worksheet("Sheet1")
+    client = gspread.authorize(creds)
+
+    return client.open("HotWheelsDB").worksheet("Sheet1")
 
     except Exception as e:
         st.error(f"Gagal koneksi Google Sheets: {e}")
