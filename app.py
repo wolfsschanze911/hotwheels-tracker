@@ -7,6 +7,7 @@ from history import load_history, save_history
 from scanner import scan_store
 from compare import compare_stock
 from ui import dashboard
+from datetime import datetime
 
 # ==========================================
 # PAGE CONFIG
@@ -22,8 +23,6 @@ st.title("WOLFSSCHANZE HW PROJECT")
 # ==========================================
 # SESSION STATE
 # ==========================================
-
-from datetime import datetime
 
 if "dashboard" not in st.session_state:
 
