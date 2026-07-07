@@ -15,7 +15,7 @@ def dashboard(
 
     with st.container(border=True):
 
-        st.subheader("🚗 Hot Wheels Tracker")
+        st.subheader("Hot Wheels Tracker")
 
         col1, col2 = st.columns(2)
 
