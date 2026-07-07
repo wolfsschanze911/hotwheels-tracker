@@ -1,178 +1,138 @@
-import gspread
-import streamlit as st
+from datetime import datetime, timezone, timedelta
 
-from google.oauth2.service_account import Credentials
-from config import SPREADSHEET_NAME, WORKSHEET_NAME
+from sheets import connect_to_sheets
+from config import WORKSHEET_NAME
 
-
-# ==========================================
-# GOOGLE SHEETS
-# ==========================================
-
-def connect_to_sheets():
-
-    try:
-
-        creds_dict = dict(
-            st.secrets["gcp_service_account"]
-        )
-
-        scopes = [
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive",
-        ]
-
-        creds = Credentials.from_service_account_info(
-            creds_dict,
-            scopes=scopes
-        )
-
-        client = gspread.authorize(creds)
-
-        return client.open(
-            SPREADSHEET_NAME
-        ).worksheet(
-            WORKSHEET_NAME
-        )
-
-    except Exception as e:
-
-        st.error(
-            f"Gagal koneksi Google Sheets : {e}"
-        )
-
-        return None
-
-
-# ==========================================
-# HISTORY UNTUK COMPARE
-# Return:
-# {
-#     key: stock
-# }
-# ==========================================
 
 def load_history():
 
     history = {}
 
-    sheet = connect_to_sheets()
-
-    if sheet is None:
-        return history
-
     try:
 
-        rows = sheet.get_all_records()
+        sheet = connect_to_sheets()
 
-        for row in rows:
+        records = sheet.get_all_records()
 
-            key = str(
-                row.get("Key", "")
-            ).strip()
 
-            if not key:
-                continue
+        for row in records:
 
-            try:
-                stock = int(
-                    row.get("Stock", 0)
-                )
-            except:
-                stock = 0
+            key = row.get(
+                "Key",
+                ""
+            )
 
-            history[key] = stock
+            stock = row.get(
+                "Stock",
+                0
+            )
 
-        return history
+
+            if key:
+
+                try:
+                    stock = int(stock)
+
+                except:
+                    stock = 0
+
+
+                history[key] = stock
+
 
     except Exception as e:
 
-        st.error(
-            f"load_history gagal : {e}"
+        print(
+            f"Load history error: {e}"
         )
 
-        return history
+
+    return history
 
 
-# ==========================================
-# LOAD DATABASE
-# Return seluruh isi sheet
-# ==========================================
 
-def load_database():
-
-    sheet = connect_to_sheets()
-
-    if sheet is None:
-        return []
+def save_history(history):
 
     try:
 
-        return sheet.get_all_records()
+        sheet = connect_to_sheets()
 
-    except Exception as e:
 
-        st.error(
-            f"load_database gagal : {e}"
+        now = datetime.now(
+            timezone(
+                timedelta(hours=7)
+            )
+        ).strftime(
+            "%d %b %Y %H:%M WIB"
         )
 
-        return []
+
+        rows = []
 
 
-# ==========================================
-# SAVE DATABASE
-# Menerima list of dict
-# ==========================================
+        for key, stock in history.items():
 
-def save_history(records):
+            parts = key.split(
+                "_",
+                1
+            )
 
-    sheet = connect_to_sheets()
 
-    if sheet is None:
-        return
+            store = parts[0]
 
-    try:
+            series = (
+                parts[1]
+                if len(parts) > 1
+                else "-"
+            )
 
-        rows = [[
-            "Key",
-            "Series",
-            "Store",
-            "Stock",
-            "Price",
-            "Status",
-            "Change",
-            "Last Scan"
-        ]]
-
-        for item in records:
 
             rows.append([
 
-                item.get("Key", ""),
+                key,
 
-                item.get("Series", ""),
+                series,
 
-                item.get("Store", ""),
+                store,
 
-                item.get("Stock", 0),
+                stock,
 
-                item.get("Price", 0),
+                "",
 
-                item.get("Status", ""),
+                "",
 
-                item.get("Change", 0),
+                "",
 
-                item.get("Last Scan", "")
+                now
 
             ])
 
-        sheet.update(
-            "A1:H{}".format(len(rows)),
+
+
+        sheet.clear()
+
+
+        sheet.append_row(
+            [
+                "Key",
+                "Series",
+                "Store",
+                "Stock",
+                "Price",
+                "Status",
+                "Change",
+                "Last Scan"
+            ]
+        )
+
+
+        sheet.append_rows(
             rows
         )
 
+
     except Exception as e:
 
-        st.error(
+        raise Exception(
             f"Save gagal : {e}"
         )
