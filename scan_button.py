@@ -6,19 +6,18 @@ from state import scan_state
 
 def render_scan_button():
 
-    st.markdown("## 🔍 Scanner")
-
-
-    is_running = scan_state.get(
+    running = scan_state.get(
         "running",
         False
     )
 
 
-    if is_running:
+    if running:
 
-        st.warning(
-            "🟡 Scan sedang berjalan..."
+        st.button(
+            "🟡 Scan berjalan...",
+            disabled=True,
+            use_container_width=True
         )
 
         return
