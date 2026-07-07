@@ -122,13 +122,13 @@ if st.button("SCAN SEMUA TOKO"):
         progress_bar.progress((i + 1) / len(DAFTAR_TOKO))
 
     save_history(history)
-    dashboard_card(
-        total_toko=len(DAFTAR_TOKO),
-        total_produk=total_produk,
-        total_baru=total_baru,
-        total_naik=total_naik,
-        total_turun=total_turun,
-        status="🟢 Scan selesai",
+    dashboard(
+    total_toko=len(DAFTAR_TOKO),
+    total_produk=total_produk,
+    total_baru=total_baru,
+    total_naik=total_naik,
+    total_turun=total_turun,
+    status="🟢 Scan selesai",
     )
 
     st.success("✅ Scan selesai! Data stok terbaru telah disimpan.")
