@@ -2,46 +2,37 @@ import streamlit as st
 from datetime import datetime
 
 
-def dashboard(total_toko, total_produk, baru, naik, turun):
+def dashboard(
+    total_toko,
+    total_produk,
+    total_baru,
+    total_naik,
+    total_turun,
+    status="🟢 Scan selesai",
+):
 
-    html = f"""
-    <div style="
-        background:#1d1f24;
-        padding:18px;
-        border-radius:12px;
-        border:1px solid #333;
-        margin-bottom:20px;
-    ">
+    last_scan = datetime.now().strftime("%d %b %Y %H:%M:%S")
 
-        <div style="font-size:22px;font-weight:bold;">
-            🚗 Hot Wheels Tracker
-        </div>
+    with st.container(border=True):
 
-        <div style="margin-top:8px;">
-            🟢 <b>Status :</b> Scan selesai
-        </div>
+        st.subheader("🚗 Hot Wheels Tracker")
 
-        <div style="font-size:13px;color:#999;">
-            🕒 Terakhir scan<br>
-            {datetime.now().strftime("%d %b %Y • %H:%M:%S")}
-        </div>
+        col1, col2 = st.columns(2)
 
-        <hr>
+        with col1:
+            st.write("**Status**")
+            st.success(status)
 
-        <div style="
-            display:flex;
-            justify-content:space-between;
-            flex-wrap:wrap;
-            gap:8px;
-        ">
-            <div>🏪 <b>{total_toko}</b> Toko</div>
-            <div>🚗 <b>{total_produk}</b> Produk</div>
-            <div>🆕 <b>{baru}</b> Baru</div>
-            <div>🟢 <b>{naik}</b> Naik</div>
-            <div>🔴 <b>{turun}</b> Turun</div>
-        </div>
+        with col2:
+            st.write("**Last Scan**")
+            st.info(last_scan)
 
-    </div>
-    """
+        st.divider()
 
-    st.markdown(html, unsafe_allow_html=True)
+        c1, c2, c3, c4, c5 = st.columns(5)
+
+        c1.metric("🏪 Toko", total_toko)
+        c2.metric("🚗 Produk", total_produk)
+        c3.metric("🆕 Baru", total_baru)
+        c4.metric("🟢 Naik", total_naik)
+        c5.metric("🔴 Turun", total_turun)
