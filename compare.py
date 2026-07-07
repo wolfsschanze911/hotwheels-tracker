@@ -24,3 +24,10 @@ def compare_stock(history, key, current_stock):
         status = "➖ Tetap"
 
     return status, prev_stock, diff
+    return {
+    "status": "🟢 +2",
+    "type": "increase",
+    "previous": 3,
+    "current": 5,
+    "diff": 2,
+}
