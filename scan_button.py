@@ -23,12 +23,9 @@ def render_scan_button():
         return
 
 
-
     if st.button(
         "🚗 Mulai Scan",
         use_container_width=True
     ):
 
-        start_scan(
-            refresh=st.rerun
-        )
+        start_scan()
