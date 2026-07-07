@@ -117,5 +117,10 @@ def start_scan(refresh=None):
             progress=100
         )
 
+
+if refresh:
+
+    refresh()
+
     finally:
         scan_state["running"] = False
