@@ -1,5 +1,4 @@
 import time
-from state import scan_results
 from datetime import datetime, timezone, timedelta
 
 from config import DAFTAR_TOKO
@@ -10,7 +9,8 @@ from history import load_history, save_history
 from state import (
     reset_state,
     update_state,
-    scan_state
+    scan_state,
+    scan_results
 )
 
 
