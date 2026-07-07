@@ -20,11 +20,7 @@ def connect_to_sheets():
 
         client = gspread.authorize(creds)
 
-        return client.open(
-            SPREADSHEET_NAME
-        ).worksheet(
-            WORKSHEET_NAME
-        )
+        return client.open(SPREADSHEET_NAME).worksheet(WORKSHEET_NAME)
 
     except Exception as e:
         st.error(f"Gagal koneksi Google Sheets : {e}")
