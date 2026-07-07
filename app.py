@@ -4,11 +4,8 @@ import time
 
 from dashboard import render_dashboard
 from scan_engine import start_scan
+from state import scan_state
 
-
-# ==========================================
-# PAGE CONFIG
-# ==========================================
 
 st.set_page_config(
     page_title="Hot Wheels Tracker",
@@ -16,40 +13,15 @@ st.set_page_config(
 )
 
 
-# ==========================================
-# TITLE
-# ==========================================
-
 st.title("WOLFSSCHANZE HW PROJECT")
 
 
-# ==========================================
-# SESSION STATE
-# ==========================================
 
-if "scan_running" not in st.session_state:
-
-    st.session_state.scan_running = False
-
-
-
-# ==========================================
-# SCAN THREAD
-# ==========================================
-
-def run_scan():
-
-    start_scan()
-
-    st.session_state.scan_running = False
-
-
-
-# ==========================================
+# ==============================
 # BUTTON
-# ==========================================
+# ==============================
 
-if st.session_state.scan_running:
+if scan_state["running"]:
 
     button_text = "⏳ SCANNING..."
 
@@ -59,53 +31,37 @@ else:
 
 
 
-clicked = st.button(
+if st.button(
     button_text,
     use_container_width=True,
-    disabled=st.session_state.scan_running
-)
-
-
-
-if clicked:
-
-    st.session_state.scan_running = True
-
+    disabled=scan_state["running"]
+):
 
     thread = threading.Thread(
-        target=run_scan,
+        target=start_scan,
         daemon=True
     )
 
     thread.start()
 
 
-    time.sleep(0.1)
 
-    st.rerun()
-
-
-
-# ==========================================
-# DASHBOARD REFRESH
-# ==========================================
+# ==============================
+# DASHBOARD LOOP
+# ==============================
 
 placeholder = st.empty()
 
 
-if st.session_state.scan_running:
-
-    while st.session_state.scan_running:
-
-        with placeholder.container():
-
-            render_dashboard()
-
-        time.sleep(1)
-
-
-else:
+while scan_state["running"]:
 
     with placeholder.container():
 
         render_dashboard()
+
+    time.sleep(1)
+
+
+with placeholder.container():
+
+    render_dashboard()
