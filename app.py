@@ -7,7 +7,15 @@ from config import DAFTAR_TOKO
 from history import load_history, save_history
 from scanner import scan_store
 from compare import compare_stock
-from ui import dashboard_card
+from ui import dashboard
+
+dashboard(
+    total_toko=15,
+    total_produk=163,
+    baru=3,
+    naik=8,
+    turun=2,
+)
 
 st.set_page_config(
     page_title="Hot Wheels Tracker",
@@ -15,15 +23,6 @@ st.set_page_config(
 )
 
 st.title("🚗 Alfagift Hotwheels Live Tracker")
-
-dashboard_card(
-    total_toko=len(DAFTAR_TOKO),
-    total_produk=0,
-    total_baru=0,
-    total_naik=0,
-    total_turun=0,
-    status="⚪ Belum Scan",
-)
 
 if st.button("SCAN SEMUA TOKO"):
 
