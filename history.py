@@ -180,6 +180,11 @@ def save_history(history):
 
     except Exception as e:
 
+        print(
+            "DETAIL SAVE ERROR:",
+            repr(e)
+        )
+
         raise Exception(
             f"Save gagal : {e}"
         )
