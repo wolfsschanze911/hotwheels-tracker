@@ -39,7 +39,7 @@ def start_scan():
     for i, toko in enumerate(DAFTAR_TOKO):
 
         try:
-
+return True
             nama_toko = toko["nama"]
 
 
@@ -157,3 +157,4 @@ def start_scan():
 
         progress=100
     )
+    
