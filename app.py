@@ -32,6 +32,11 @@ if "scan_running" not in st.session_state:
     st.session_state.scan_running = False
 
 
+if "scan_finished" not in st.session_state:
+
+    st.session_state.scan_finished = False
+
+
 
 # ==========================================
 # DASHBOARD AREA
