@@ -50,25 +50,37 @@ if st.button(
     use_container_width=True
 ):
 
-    if not st.session_state.scan_running:
+    if st.session_state.scan_running:
 
-        st.session_state.scan_running = True
+    button_text = "⏳ SCANNING..."
 
+else:
 
-        def run_scan():
-
-            start_scan()
-
-            st.session_state.scan_running = False
+    button_text = "🚀 SCAN SEMUA TOKO"
 
 
 
-        thread = threading.Thread(
-            target=run_scan
-        )
+if st.button(
+    button_text,
+    use_container_width=True,
+    disabled=st.session_state.scan_running
+):
 
-        thread.start()
+    st.session_state.scan_running = True
 
+
+    def run_scan():
+
+        start_scan()
+
+        st.session_state.scan_running = False
+
+
+    thread = threading.Thread(
+        target=run_scan
+    )
+
+    thread.start()
 
 
     thread = threading.Thread(
