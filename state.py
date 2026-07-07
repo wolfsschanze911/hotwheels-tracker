@@ -1,5 +1,5 @@
 scan_state = {
-    "status": "Idle",
+    "status": "⚪ Idle",
     "last_scan": "-",
 
     "stores_done": 0,
@@ -19,7 +19,7 @@ def reset_state():
 
     scan_state.update({
 
-        "status": "Preparing...",
+        "status": "⚪ Preparing...",
         "last_scan": "-",
 
         "stores_done": 0,
