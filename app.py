@@ -27,10 +27,6 @@ st.title("🚗 Hot Wheels Tracker")
 if "scan_running" not in st.session_state:
     st.session_state.scan_running = False
 
-if "scan_finished" not in st.session_state:
-    st.session_state.scan_finished = False
-
-
 # ==========================================
 # HANDLE SCAN FINISH
 # ==========================================
@@ -44,7 +40,9 @@ if st.session_state.scan_finished:
 # BUTTON
 # ==========================================
 
-if st.session_state.scan_running:
+from state import scan_state
+
+if scan_state["status"].startswith("🟡"):
     button_text = "⏳ SCANNING..."
 else:
     button_text = "🚀 SCAN SEMUA TOKO"
@@ -52,19 +50,17 @@ else:
 if st.button(
     button_text,
     use_container_width=True,
-    disabled=st.session_state.scan_running
+    disabled=scan_state["status"].startswith("🟡")
 ):
-    st.session_state.scan_running = True
-
 
     def run_scan():
         start_scan()
-        st.session_state.scan_finished = True
 
     thread = threading.Thread(
         target=run_scan,
         daemon=True
     )
+
     thread.start()
     st.rerun()
 
