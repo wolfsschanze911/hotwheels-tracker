@@ -90,9 +90,14 @@ def start_scan(refresh=None):
                     price_down=total_naik,
                     price_up=total_turun,
                     progress=int(
-                    ((i + 1) / total_toko) * 100
+                        ((i + 1) / total_toko) * 100
                     )
                 )
+
+
+                if refresh:
+
+                refresh()
 
             except Exception as e:
                 update_state(
