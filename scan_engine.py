@@ -108,9 +108,9 @@ def start_scan():
 
         status="🟢 Scan selesai",
         last_scan=datetime.now(
-        timezone(timedelta(hours=7))
+            timezone(timedelta(hours=7))
         )
         .strftime("%d %b %Y %H:%M WIB"),
-        )
+        
 
     return True
