@@ -17,7 +17,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🚗 WOLFSSCHANZE HW PROJECT")
+st.title("WOLFSSCHANZE HW PROJECT")
 
 # ==========================================
 # SESSION STATE
