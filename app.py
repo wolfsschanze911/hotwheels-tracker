@@ -70,7 +70,7 @@ if st.button(
    
     def run_scan():
         start_scan()
-        st.session_state.scan_running = False
+        st.session_state.scan_finished = True
         st.session_state.scan_done = True
     thread = threading.Thread(
         target=run_scan
