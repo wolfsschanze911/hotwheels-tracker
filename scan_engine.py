@@ -15,8 +15,6 @@ from state import (
 
 def start_scan():
 
-    scan_state["running"] = True
-
     reset_state()
 
     # pastikan running tetap aktif setelah reset
@@ -123,4 +121,4 @@ def start_scan():
         )
 
 
-scan_state["running"] = False
+
