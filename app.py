@@ -119,9 +119,13 @@ st.set_page_config(page_title="Hot Wheels Tracker", layout="wide")
 st.title("🚗 Alfagift Hotwheels Live Tracker")
 
 
-if st.button("SCAN SEMUA TOKO"):
+if st.button("TEST HISTORY"):
+
     history = load_history()
-    progress_bar = st.progress(0)
+
+    st.success(f"Total history : {len(history)}")
+
+    st.write(history)
 
     for i, toko in enumerate(daftar_toko_depok):
         try:
