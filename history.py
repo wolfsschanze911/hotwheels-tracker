@@ -5,6 +5,9 @@ from google.oauth2.service_account import Credentials
 from config import SPREADSHEET_NAME, WORKSHEET_NAME
 
 
+# ==========================================
+# GOOGLE SHEETS
+# ==========================================
 
 def connect_to_sheets():
 
@@ -14,28 +17,23 @@ def connect_to_sheets():
             st.secrets["gcp_service_account"]
         )
 
-
         scopes = [
             "https://www.googleapis.com/auth/spreadsheets",
             "https://www.googleapis.com/auth/drive",
         ]
-
 
         creds = Credentials.from_service_account_info(
             creds_dict,
             scopes=scopes
         )
 
-
         client = gspread.authorize(creds)
-
 
         return client.open(
             SPREADSHEET_NAME
         ).worksheet(
             WORKSHEET_NAME
         )
-
 
     except Exception as e:
 
@@ -46,6 +44,13 @@ def connect_to_sheets():
         return None
 
 
+# ==========================================
+# HISTORY UNTUK COMPARE
+# Return:
+# {
+#     key: stock
+# }
+# ==========================================
 
 def load_history():
 
@@ -53,16 +58,12 @@ def load_history():
 
     sheet = connect_to_sheets()
 
-
     if sheet is None:
-
         return history
-
 
     try:
 
         rows = sheet.get_all_records()
-
 
         for row in rows:
 
@@ -70,19 +71,19 @@ def load_history():
                 row.get("Key", "")
             ).strip()
 
+            if not key:
+                continue
 
-            if key:
-
+            try:
                 stock = int(
                     row.get("Stock", 0)
                 )
+            except:
+                stock = 0
 
-
-                history[key] = stock
-
+            history[key] = stock
 
         return history
-
 
     except Exception as e:
 
@@ -93,59 +94,82 @@ def load_history():
         return history
 
 
+# ==========================================
+# LOAD DATABASE
+# Return seluruh isi sheet
+# ==========================================
 
-def save_history(history):
+def load_database():
 
     sheet = connect_to_sheets()
 
-
     if sheet is None:
-
-        return
-
+        return []
 
     try:
 
-        # ambil data lama dulu
-        old_history = load_history()
+        return sheet.get_all_records()
+
+    except Exception as e:
+
+        st.error(
+            f"load_database gagal : {e}"
+        )
+
+        return []
 
 
-        # gabungkan data lama + baru
-        old_history.update(history)
+# ==========================================
+# SAVE DATABASE
+# Menerima list of dict
+# ==========================================
 
+def save_history(records):
 
-        rows = [
-            [
-                "Key",
-                "Stock"
-            ]
-        ]
+    sheet = connect_to_sheets()
 
+    if sheet is None:
+        return
 
-        for key, stock in old_history.items():
+    try:
 
-            rows.append(
-                [
-                    key,
-                    stock
-                ]
-            )
+        rows = [[
+            "Key",
+            "Series",
+            "Store",
+            "Stock",
+            "Price",
+            "Status",
+            "Change",
+            "Last Scan"
+        ]]
 
+        for item in records:
 
-        # backup data lama tetap aman
-        sheet.clear()
+            rows.append([
 
+                item.get("Key", ""),
+
+                item.get("Series", ""),
+
+                item.get("Store", ""),
+
+                item.get("Stock", 0),
+
+                item.get("Price", 0),
+
+                item.get("Status", ""),
+
+                item.get("Change", 0),
+
+                item.get("Last Scan", "")
+
+            ])
 
         sheet.update(
-            "A1",
+            "A1:H{}".format(len(rows)),
             rows
         )
-
-
-        st.success(
-            "History berhasil disimpan."
-        )
-
 
     except Exception as e:
 
