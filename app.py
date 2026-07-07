@@ -1,12 +1,9 @@
 import streamlit as st
+import time
 
 from dashboard import render_dashboard
 from scan_engine import start_scan
 
-
-# ==========================================
-# PAGE CONFIG
-# ==========================================
 
 st.set_page_config(
     page_title="Hot Wheels Tracker",
@@ -14,31 +11,42 @@ st.set_page_config(
 )
 
 
-# ==========================================
-# TITLE
-# ==========================================
-
 st.title("WOLFSSCHANZE HW PROJECT")
 
 
-# ==========================================
-# BUTTON
-# ==========================================
+dashboard_placeholder = st.empty()
+
+
+
+def refresh_dashboard():
+
+    with dashboard_placeholder.container():
+
+        render_dashboard()
+
+
+
+# tampil awal
+refresh_dashboard()
+
+
 
 if st.button(
     "🚀 SCAN SEMUA TOKO",
     use_container_width=True
 ):
 
-    start_scan()
+    def refresh():
 
-    st.success(
-        "✅ Scan selesai"
+        refresh_dashboard()
+
+        time.sleep(0.1)
+
+
+    start_scan(
+        refresh=refresh
     )
 
 
-# ==========================================
-# DASHBOARD
-# ==========================================
+    refresh_dashboard()
 
-render_dashboard()
