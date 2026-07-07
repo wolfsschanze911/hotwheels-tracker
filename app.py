@@ -56,11 +56,19 @@ if st.button(
         st.session_state.scan_running = True
 
 
-        thread = threading.Thread(
-            target=start_scan
-        )
+        def run_scan():
 
-        thread.start()
+    start_scan()
+
+    st.session_state.scan_running = False
+
+
+
+    thread = threading.Thread(
+        target=run_scan
+    )
+
+    thread.start()
 
 
 
