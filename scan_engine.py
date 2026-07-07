@@ -1,52 +1,156 @@
 import time
 from datetime import datetime
 
+from config import DAFTAR_TOKO
+from scanner import scan_store
+from compare import compare_stock
+from history import load_history, save_history
+
 from state import (
-    scan_state,
     reset_state,
-    update_state
+    update_state,
+    scan_state
 )
 
 
 def start_scan():
 
+    # Reset dashboard
     reset_state()
 
-    total_store = scan_state["stores_total"]
+    history = load_history()
 
 
-    for store in range(1, total_store + 1):
-
-        update_state(
-            status=f"Scanning store {store}/{total_store}"
-        )
-
-
-        time.sleep(1)
+    total_produk = 0
+    total_baru = 0
+    total_naik = 0
+    total_turun = 0
 
 
-        update_state(
-
-            stores_done=store,
-
-            cars_found=scan_state["cars_found"] + 10,
-
-            new_items=scan_state["new_items"] + 1,
-
-            price_down=scan_state["price_down"] + 2,
-
-            price_up=scan_state["price_up"] + 1,
+    total_toko = len(DAFTAR_TOKO)
 
 
-            progress=int(
-                (store / total_store) * 100
+    update_state(
+        status="🟡 Preparing scan...",
+        stores_total=total_toko
+    )
+
+
+    for i, toko in enumerate(DAFTAR_TOKO):
+
+        try:
+
+            nama_toko = toko["nama"]
+
+
+            update_state(
+                status=f"🟡 Scanning {nama_toko}..."
             )
-        )
+
+
+            # Scan toko
+            products = scan_store(toko)
+
+
+            stok_tersedia = [
+                p for p in products
+                if p.get("stock", 0) > 0
+            ]
+
+
+            for p in stok_tersedia:
+
+
+                nama_produk = " ".join(
+                    p.get("productName", "").split()
+                ).upper()
+
+
+                nama_toko_clean = " ".join(
+                    nama_toko.split()
+                ).upper()
+
+
+                current_stock = p.get(
+                    "stock",
+                    0
+                )
+
+
+                key = (
+                    f"{nama_toko_clean}_"
+                    f"{nama_produk}"
+                )
+
+
+                status, prev_stock, diff = compare_stock(
+                    history,
+                    key,
+                    current_stock
+                )
+
+
+                total_produk += 1
+
+
+                if status == "🆕 Baru":
+                    total_baru += 1
+
+
+                elif status.startswith("🟢"):
+                    total_naik += 1
+
+
+                elif status.startswith("🔴"):
+                    total_turun += 1
+
+
+
+                # simpan stok terbaru
+
+                history[key] = current_stock
+
+
+
+            # update dashboard setelah satu toko selesai
+
+            update_state(
+
+                stores_done=i + 1,
+
+                cars_found=total_produk,
+
+                new_items=total_baru,
+
+                price_down=total_naik,
+
+                price_up=total_turun,
+
+
+                progress=int(
+                    ((i + 1) / total_toko) * 100
+                )
+            )
+
+
+        except Exception as e:
+
+            update_state(
+                status=f"⚠️ Error {nama_toko}"
+            )
+
+
+        # beri waktu agar dashboard terlihat update
+        time.sleep(0.5)
+
+
+
+    save_history(history)
 
 
     update_state(
 
-        status="Completed",
+        status="🟢 Scan selesai",
 
         last_scan=datetime.now()
         .strftime("%d %b %Y %H:%M"),
