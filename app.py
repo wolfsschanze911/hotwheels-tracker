@@ -23,19 +23,24 @@ st.title("🚗 Alfagift Hotwheels Live Tracker")
 if st.button("SCAN SEMUA TOKO"):
     history = load_history()
     progress_bar = st.progress(0)
-
-    for i, toko in enumerate(daftar_toko_depok):
+    
+    for i, toko in enumerate(DAFTAR_TOKO):
         try:
             products = scan_store(toko)
-            stok_tersedia = [p for p in products if p.get("stock", 0) > 0]
-
-            # 4. Baru tampilkan UI (Tombol Maps & Expander)
+            stok_tersedia = [
+                p for p in products
+                if p.get("stock", 0) > 0
+            ]
             col1, col2 = st.columns([3, 1])
             with col1:
                 st.subheader(f"📍 {toko['nama']}")
             with col2:
-                url_maps = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote('Alfamart ' + toko['nama'])}"
+                url_maps = (
+                    f"https://www.google.com/maps/search/?api=1&query="
+                    f"{quote('Alfamart ' + toko['nama'])}"
+                )
                 st.link_button("📍 Maps", url=url_maps)
+
 
             # Sekarang stok_tersedia sudah ada, jadi expander tidak akan error lagi
             with st.expander(f"Lihat stok ({len(stok_tersedia)} item ditemukan)"):
