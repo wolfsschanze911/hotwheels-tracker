@@ -1,7 +1,13 @@
 import streamlit as st
+import threading
 
 from scan_engine import start_scan
 from state import scan_state
+
+
+def run_scan():
+
+    start_scan()
 
 
 
@@ -30,17 +36,14 @@ def render_scan_button():
         use_container_width=True
     ):
 
-        st.session_state["start_scan"] = True
+
+        thread = threading.Thread(
+            target=run_scan,
+            daemon=True
+        )
+
+
+        thread.start()
+
 
         st.rerun()
-
-
-
-    if st.session_state.get(
-        "start_scan",
-        False
-    ):
-
-        st.session_state["start_scan"] = False
-
-        start_scan()
