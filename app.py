@@ -14,7 +14,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🚗 Alfagift Hotwheels Live Tracker")
+st.title("🚗 WOLFSSCHANZE HW PROJECT")
 
 dashboard(
     total_toko=15,
