@@ -1,82 +1,118 @@
 import streamlit as st
+
 from state import scan_state
 
+
 def render_dashboard():
-    with st.container(border=True):
 
-        st.markdown(
-            """
-            <style>
-            .hw-title {
-                font-size: 20px;
-                font-weight: 700;
-                margin-bottom: 2px;
-            }
+    st.markdown("## 📊 Dashboard")
 
-            .hw-status {
-                font-size: 15px;
-                margin: 0;
-            }
 
-            .hw-info {
-                font-size: 13px;
-                margin-top: 2px;
-            }
+    # ==========================
+    # Status Scan
+    # ==========================
 
-            .hw-stat {
-                font-size: 14px;
-                margin-top: 6px;
-            }
+    status = scan_state.get(
+        "status",
+        "⚪ Menunggu scan..."
+    )
 
-            </style>
-            """,
-            unsafe_allow_html=True
+    st.info(status)
+
+
+
+    # ==========================
+    # Progress
+    # ==========================
+
+    progress = scan_state.get(
+        "progress",
+        0
+    )
+
+    st.progress(
+        progress / 100
+    )
+
+    st.caption(
+        f"Progress scan : {progress}%"
+    )
+
+
+
+    # ==========================
+    # Statistik
+    # ==========================
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+
+        st.metric(
+            "🏪 Toko",
+            f'{scan_state.get("stores_done",0)} / {scan_state.get("stores_total",0)}'
         )
 
-        st.markdown(
-            """
-            <div class="hw-title">
-            🚗 Hot Wheels Tracker
-            </div>
-            """,
-            unsafe_allow_html=True
+
+    with col2:
+
+        st.metric(
+            "🚗 Produk",
+            scan_state.get(
+                "cars_found",
+                0
+            )
         )
 
-        st.markdown(
-            f"""
-            <div class="hw-status">
-            {scan_state["status"]}
-            </div>
-            """,
-            unsafe_allow_html=True
+
+    with col3:
+
+        st.metric(
+            "🆕 Baru",
+            scan_state.get(
+                "new_items",
+                0
+            )
         )
 
-        st.markdown(
-            f"""
-            <div class="hw-info">
-            🕒 {scan_state["last_scan"]}
-            </div>
-            """,
-            unsafe_allow_html=True
+
+
+    col4, col5 = st.columns(2)
+
+
+    with col4:
+
+        st.metric(
+            "🟢 Stok Naik",
+            scan_state.get(
+                "price_down",
+                0
+            )
         )
 
-        st.markdown(
-            f"""
-            <div class="hw-stat">
-            🏪 {scan_state["stores_done"]}/{scan_state["stores_total"]}
-            &nbsp;&nbsp;
-            🚗 {scan_state["cars_found"]}
-            &nbsp;&nbsp;
-            🆕 {scan_state["new_items"]}
-            &nbsp;&nbsp;
-            🟢 {scan_state["price_down"]}
-            &nbsp;&nbsp;
-            🔴 {scan_state["price_up"]}
-            </div>
-            """,
-            unsafe_allow_html=True
+
+    with col5:
+
+        st.metric(
+            "🔴 Stok Turun",
+            scan_state.get(
+                "price_up",
+                0
+            )
         )
 
-        st.progress(
-            scan_state["progress"] / 100
-        )
+
+
+    # ==========================
+    # Last Scan
+    # ==========================
+
+    last_scan = scan_state.get(
+        "last_scan",
+        "-"
+    )
+
+
+    st.caption(
+        f"🕒 Last scan : {last_scan}"
+    )
