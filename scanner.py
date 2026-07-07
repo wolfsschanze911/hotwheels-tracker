@@ -30,8 +30,9 @@ def scan_store(toko):
     data = response.json()
 
     products = (
-        data.get("products", [])
-        or data.get("data", {}).get("products", [])
+    data.get("products")
+    or data.get("data", {}).get("products")
+    or []
     )
 
     return products
