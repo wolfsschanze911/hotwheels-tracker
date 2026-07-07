@@ -17,16 +17,21 @@ st.set_page_config(
 st.title("🚗 WOLFSSCHANZE HW PROJECT")
 
 dashboard(
-    total_toko=15,
-    total_produk=163,
-    total_baru=3,
-    total_naik=8,
-    total_turun=2,
+    total_toko=len(DAFTAR_TOKO),
+    total_produk=0,
+    total_baru=0,
+    total_naik=0,
+    total_turun=0,
+    status="⚪ Belum Scan",
 )
 
 if st.button("SCAN SEMUA TOKO"):
 
     history = load_history()
+    total_produk = 0
+    total_baru = 0
+    total_naik = 0
+    total_turun = 0
 
     progress_bar = st.progress(0)
 
@@ -83,6 +88,16 @@ if st.button("SCAN SEMUA TOKO"):
                             key,
                             current_stock,
                         )
+                        total_produk += 1
+
+                    if status == "🆕 Baru":
+                        total_baru += 1
+
+                    elif status.startswith("🟢"):
+                        total_naik += 1
+
+                    elif status.startswith("🔴"):
+                        total_turun += 1
 
                         list_data.append(
                             {
