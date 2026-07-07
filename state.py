@@ -1,17 +1,17 @@
 scan_state = {
+
+    "running": False,
+
     "status": "⚪ Idle",
     "last_scan": "-",
-
     "stores_done": 0,
     "stores_total": 15,
-
     "cars_found": 0,
     "new_items": 0,
-
     "price_down": 0,
     "price_up": 0,
-
     "progress": 0
+
 }
 
 
