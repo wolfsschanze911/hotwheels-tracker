@@ -10,7 +10,7 @@ from state import (
     scan_state
 )
 
-def start_scan():
+def start_scan(refresh=None):
     scan_state["running"] = True
     reset_state()
     scan_state["running"] = True
@@ -90,7 +90,7 @@ def start_scan():
                     price_down=total_naik,
                     price_up=total_turun,
                     progress=int(
-                        ((i + 1) / total_toko) * 100
+                    ((i + 1) / total_toko) * 100
                     )
                 )
 
