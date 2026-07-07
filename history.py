@@ -48,12 +48,50 @@ def connect_to_sheets():
 
 
 # ==================================
+# Series Cleaner
+# ==================================
+
+def clean_series_name(name):
+
+    name = name.upper()
+
+
+    remove_words = [
+        "HOT WHEELS",
+        "MAINAN MOBIL ANAK",
+        "MAINAN MOBIL",
+        "MAINAN",
+        "MOBIL",
+        "ANAK",
+        "ASSORTED",
+    ]
+
+
+    for word in remove_words:
+
+        name = name.replace(
+            word,
+            ""
+        )
+
+
+    name = " ".join(
+        name.split()
+    )
+
+
+    return name.strip()
+
+
+
+# ==================================
 # Load History
 # ==================================
 
 def load_history():
 
     history = {}
+
 
     try:
 
@@ -69,7 +107,9 @@ def load_history():
                 ""
             )
 
+
             if not key:
+
                 continue
 
 
@@ -82,9 +122,11 @@ def load_history():
                     )
                 )
 
+
             except:
 
                 history[key] = 0
+
 
 
     except Exception as e:
@@ -117,6 +159,7 @@ def save_history(history):
 
 
     rows = [
+
         [
             "Key",
             "Series",
@@ -127,10 +170,13 @@ def save_history(history):
             "Change",
             "Last Scan"
         ]
+
     ]
 
 
+
     for key, stock in history.items():
+
 
         parts = key.split(
             "_",
@@ -140,25 +186,47 @@ def save_history(history):
 
         store = parts[0]
 
-        series = (
+
+        raw_series = (
+
             parts[1]
+
             if len(parts) > 1
+
             else "-"
+
+        )
+
+
+        series = clean_series_name(
+            raw_series
         )
 
 
         rows.append(
+
             [
+
                 key,
+
                 series,
+
                 store,
+
                 stock,
+
                 "",
+
                 "",
+
                 "",
+
                 now
+
             ]
+
         )
+
 
 
     sheet.clear()
