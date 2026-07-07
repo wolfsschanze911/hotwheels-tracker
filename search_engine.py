@@ -4,47 +4,47 @@ from state import scan_results
 
 
 def search(keyword):
+    """
+    Mencari produk berdasarkan keyword.
+
+    Returns:
+        list[dict]
+    """
 
     keyword = keyword.strip().lower()
 
-    if keyword == "":
+    if not keyword:
         return []
 
-    hasil = defaultdict(list)
+    grouped_results = defaultdict(list)
 
     for item in scan_results:
 
-        nama = item["produk"].lower()
+        product_name = item["produk"]
 
-        if keyword in nama:
+        if keyword not in product_name.lower():
+            continue
 
-            hasil[item["produk"]].append(item)
+        grouped_results[product_name].append(item)
 
-    response = []
+    results = []
 
-    for produk, toko in hasil.items():
+    for product_name, stores in grouped_results.items():
 
-        toko.sort(
-            key=lambda x: x["stok"],
+        stores.sort(
+            key=lambda item: item["stok"],
             reverse=True
         )
 
-        response.append({
-
-            "produk": produk,
-
-            "jumlah_toko": len(toko),
-
-            "toko": toko
-
+        results.append({
+            "produk": product_name,
+            "jumlah_toko": len(stores),
+            "toko": stores
         })
 
-    response.sort(
-
-        key=lambda x: x["jumlah_toko"],
-
+    results.sort(
+        key=lambda item: item["jumlah_toko"],
         reverse=True
-
     )
 
-    return response
+    return results
