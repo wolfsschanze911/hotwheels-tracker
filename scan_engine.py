@@ -16,10 +16,6 @@ def start_scan():
 
     reset_state()
 
-    # pastikan running tetap aktif setelah reset
-    scan_state["running"] = True
-
-
     history = load_history()
 
 
