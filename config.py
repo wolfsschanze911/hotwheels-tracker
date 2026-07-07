@@ -1,3 +1,5 @@
+import streamlit as st
+
 SPREADSHEET_NAME = "HotWheelsDB"
 WORKSHEET_NAME = "Sheet1"
 
@@ -9,7 +11,7 @@ HEADERS = {
     'devicemodel': 'chrome',
     'devicetype': 'Web',
     'fingerprint': 'FDmEBG3ie1PuHLynHv2KiLJwdsBrq2aZSM3LLxWB1FpPdZJxmJB3BKF8qBOrKo4E',
-    'token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI2YTM1NzVmMTg2NWVkYmY2ZWYyN2UwZTciLCJzdWIiOiJvY3RvcHV4M0BnbWFpbC5jb20iLCJpc3MiOiJ3ZWJjb21tZXJjZXxzZXNzaW9ufFdFQiIsImV4cCI6MTc4NTc2ODU5MSwiaWF0IjoxNzgzMTc2NTkxfQ.dQ7x50decbATh9uiktH5Ib1x5SGseNPx47OoHxRAIwc',
+    'token': st.secrets["ALFAGIFT_TOKEN"],
     'trxid': '8983712366',
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0'
 }
