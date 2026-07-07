@@ -1,7 +1,18 @@
 from datetime import datetime, timezone, timedelta
 
-from sheets import connect_to_sheets
-from config import WORKSHEET_NAME
+from google_sheet import connect_to_sheets
+
+
+SHEET_HEADER = [
+    "Key",
+    "Series",
+    "Store",
+    "Stock",
+    "Price",
+    "Status",
+    "Change",
+    "Last Scan"
+]
 
 
 def load_history():
@@ -18,9 +29,13 @@ def load_history():
         for row in records:
 
             key = row.get(
-                "Key",
-                ""
+                "Key"
             )
+
+
+            if not key:
+                continue
+
 
             stock = row.get(
                 "Stock",
@@ -28,22 +43,20 @@ def load_history():
             )
 
 
-            if key:
+            try:
+                stock = int(stock)
 
-                try:
-                    stock = int(stock)
-
-                except:
-                    stock = 0
+            except:
+                stock = 0
 
 
-                history[key] = stock
+            history[key] = stock
 
 
     except Exception as e:
 
         print(
-            f"Load history error: {e}"
+            f"Load history gagal: {e}"
         )
 
 
@@ -72,63 +85,48 @@ def save_history(history):
 
         for key, stock in history.items():
 
-            parts = key.split(
+            split_key = key.split(
                 "_",
                 1
             )
 
 
-            store = parts[0]
+            store = split_key[0]
 
             series = (
-                parts[1]
-                if len(parts) > 1
+                split_key[1]
+                if len(split_key) > 1
                 else "-"
             )
 
 
-            rows.append([
-
-                key,
-
-                series,
-
-                store,
-
-                stock,
-
-                "",
-
-                "",
-
-                "",
-
-                now
-
-            ])
-
+            rows.append(
+                [
+                    key,
+                    series,
+                    store,
+                    stock,
+                    "",
+                    "",
+                    "",
+                    now
+                ]
+            )
 
 
         sheet.clear()
 
 
         sheet.append_row(
-            [
-                "Key",
-                "Series",
-                "Store",
-                "Stock",
-                "Price",
-                "Status",
-                "Change",
-                "Last Scan"
-            ]
+            SHEET_HEADER
         )
 
 
-        sheet.append_rows(
-            rows
-        )
+        if rows:
+
+            sheet.append_rows(
+                rows
+            )
 
 
     except Exception as e:
