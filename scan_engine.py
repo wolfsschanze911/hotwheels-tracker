@@ -15,11 +15,9 @@ from state import (
 
 def start_scan():
 
-    # Reset dashboard
     reset_state()
 
     history = load_history()
-
 
     total_produk = 0
     total_baru = 0
