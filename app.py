@@ -22,13 +22,6 @@ st.title("WOLFSSCHANZE HW PROJECT")
 
 
 # ==========================================
-# DASHBOARD
-# ==========================================
-
-render_dashboard()
-
-
-# ==========================================
 # BUTTON
 # ==========================================
 
@@ -39,6 +32,13 @@ if st.button(
 
     start_scan()
 
-    st.success("✅ Scan selesai")
+    st.success(
+        "✅ Scan selesai"
+    )
 
-    st.rerun()
+
+# ==========================================
+# DASHBOARD
+# ==========================================
+
+render_dashboard()
