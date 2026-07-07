@@ -1,6 +1,8 @@
 from datetime import datetime, timezone, timedelta
 
-from google_sheet import connect_to_sheets
+from config import SPREADSHEET_NAME, WORKSHEET_NAME
+
+from google.oauth2.service_account import Credentials
 
 
 SHEET_HEADER = [
