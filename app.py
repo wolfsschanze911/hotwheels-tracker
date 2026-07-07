@@ -15,6 +15,7 @@ from history import (
 from scanner import (
     scan_store,
 )
+from compare import compare_stock
 
 st.set_page_config(page_title="Hot Wheels Tracker", layout="wide")
 st.title("🚗 Alfagift Hotwheels Live Tracker")
@@ -51,14 +52,11 @@ if st.button("SCAN SEMUA TOKO"):
                         current_stock = p.get("stock", 0)
                         key = f"{toko['nama']}_{nama_produk}"
 
-                        prev_stock = history.get(key, 0)
-                        diff = current_stock - prev_stock
-                            
-                        # Logika Status
-                        if prev_stock == 0: status = "🆕 Baru"
-                        elif diff > 0: status = f"🟢 +{diff}"
-                        elif diff < 0: status = f"🔴 {diff}"
-                        else: status = "➖ Tetap"
+                        status, prev_stock, diff = compare_stock(
+                            history,
+                            key,
+                            current_stock,
+                        )
                             
                         history[key] = current_stock
                         
