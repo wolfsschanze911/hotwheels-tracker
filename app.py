@@ -1,8 +1,8 @@
 import json
 import gspread
-import request
 import streamlit as st
 from google.oauth2.service_account import Credentials
+import requests
 
 def connect_to_sheets(): 
     try:
