@@ -1,4 +1,3 @@
-print("UI.PY LOADED")
 import streamlit as st
 from datetime import datetime
 
