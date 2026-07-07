@@ -1,6 +1,7 @@
-from datetime import datetime, timezone, timedelta
-
+import gspread
 import streamlit as st
+
+from datetime import datetime, timezone, timedelta
 
 from google.oauth2.service_account import Credentials
 
@@ -21,6 +22,7 @@ def connect_to_sheets():
         "https://www.googleapis.com/auth/drive"
     ]
 
+
     creds = Credentials.from_service_account_info(
         dict(
             st.secrets["gcp_service_account"]
@@ -28,19 +30,20 @@ def connect_to_sheets():
         scopes=scopes
     )
 
+
     client = gspread.authorize(
         creds
     )
+
 
     spreadsheet = client.open(
         SPREADSHEET_NAME
     )
 
-    worksheet = spreadsheet.worksheet(
+
+    return spreadsheet.worksheet(
         WORKSHEET_NAME
     )
-
-    return worksheet
 
 
 
@@ -66,27 +69,22 @@ def load_history():
                 ""
             )
 
-
             if not key:
                 continue
 
 
-            stock = row.get(
-                "Stock",
-                0
-            )
-
-
             try:
 
-                stock = int(stock)
+                history[key] = int(
+                    row.get(
+                        "Stock",
+                        0
+                    )
+                )
 
             except:
 
-                stock = 0
-
-
-            history[key] = stock
+                history[key] = 0
 
 
     except Exception as e:
@@ -106,91 +104,67 @@ def load_history():
 
 def save_history(history):
 
-    try:
-
-        sheet = connect_to_sheets()
+    sheet = connect_to_sheets()
 
 
-        now = datetime.now(
-            timezone(
-                timedelta(hours=7)
-            )
-        ).strftime(
-            "%d %b %Y %H:%M WIB"
+    now = datetime.now(
+        timezone(
+            timedelta(hours=7)
+        )
+    ).strftime(
+        "%d %b %Y %H:%M WIB"
+    )
+
+
+    rows = [
+        [
+            "Key",
+            "Series",
+            "Store",
+            "Stock",
+            "Price",
+            "Status",
+            "Change",
+            "Last Scan"
+        ]
+    ]
+
+
+    for key, stock in history.items():
+
+        parts = key.split(
+            "_",
+            1
         )
 
 
-        rows = []
+        store = parts[0]
+
+        series = (
+            parts[1]
+            if len(parts) > 1
+            else "-"
+        )
 
 
-        for key, stock in history.items():
-
-            parts = key.split(
-                "_",
-                1
-            )
-
-
-            store = parts[0]
-
-            series = (
-                parts[1]
-                if len(parts) > 1
-                else "-"
-            )
-
-
-            rows.append(
-                [
-                    key,
-                    series,
-                    store,
-                    stock,
-                    "",
-                    "",
-                    "",
-                    now
-                ]
-            )
-
-
-        sheet.clear()
-
-
-        sheet.append_row(
+        rows.append(
             [
-                "Key",
-                "Series",
-                "Store",
-                "Stock",
-                "Price",
-                "Status",
-                "Change",
-                "Last Scan"
+                key,
+                series,
+                store,
+                stock,
+                "",
+                "",
+                "",
+                now
             ]
         )
 
 
-        if rows:
-
-            sheet.append_rows(
-                rows
-            )
+    sheet.clear()
 
 
-    except Exception as e:
-
-        import traceback
-
-        error_detail = traceback.format_exc()
-
-        raise Exception(
-        f"""
-    Save gagal:
-
-    {str(e)}
-
-    DETAIL:
-    {error_detail}
-    """
-        )
+    sheet.update(
+        "A1",
+        rows
+    )
