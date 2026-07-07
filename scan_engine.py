@@ -51,7 +51,6 @@ def process_products(
     ).upper()
 
 
-
     for product in available_products:
 
 
@@ -65,18 +64,15 @@ def process_products(
         ).upper()
 
 
-
         stock = product.get(
             "stock",
             0
         )
 
 
-
         key = (
             f"{store_key}_{product_name}"
         )
-
 
 
         status, prev, diff = compare_stock(
@@ -90,36 +86,33 @@ def process_products(
         )
 
 
-
         history[key] = stock
 
 
-
         counters["products"] += 1
-
 
 
         if status == "🆕 Baru":
 
             counters["new"] += 1
 
-
         elif status.startswith("🟢"):
 
             counters["up"] += 1
-
 
         elif status.startswith("🔴"):
 
             counters["down"] += 1
 
 
-
         result = {
 
             "produk": product_name,
+
             "toko": store_name,
+
             "stok": stock,
+
             "harga": product.get(
                 "finalPrice",
                 0
@@ -129,22 +122,27 @@ def process_products(
 
         }
 
-        scan_results.append(result)
+
+        scan_results.append(
+            result
+        )
 
 
-# ==============================
-# Live Update Feed
-# ==============================
+        # ==============================
+        # Live Update Feed
+        # ==============================
 
-if status != "➖ Tetap":
+        if status != "➖ Tetap":
 
-    update = result.copy()
+            update = result.copy()
 
-    update["stok_lama"] = prev
+            update["stok_lama"] = prev
 
-    update["perubahan"] = diff
+            update["perubahan"] = diff
 
-    add_update(update)
+            add_update(
+                update
+            )
 
 
 
