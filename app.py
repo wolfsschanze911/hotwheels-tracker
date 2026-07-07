@@ -2,38 +2,76 @@ import streamlit as st
 
 from dashboard import render_dashboard
 from scan_button import render_scan_button
+from search_ui import render_search
+from updates_ui import render_updates
 
-# nanti
-# from search_ui import render_search
-# from updates_ui import render_updates
+from state import scan_results
+
+
+# =====================================
+# Page Config
+# =====================================
 
 st.set_page_config(
-    page_title="Hot Wheels Tracker",
-    layout="centered"
+    page_title="Hot Wheels Scanner",
+    page_icon="🚗",
+    layout="wide"
 )
 
-st.title("WOLFSSCHANZE HW PROJECT")
 
-# Dashboard
-render_dashboard()
 
-# Tombol Scan
+# =====================================
+# Header
+# =====================================
+
+st.title("🚗 Hot Wheels Stock Scanner")
+
+st.caption(
+    "Monitoring stok dan perubahan Hot Wheels secara realtime"
+)
+
+
+
+# =====================================
+# Scan Control
+# =====================================
+
 render_scan_button()
 
+
+
 st.divider()
 
-# Placeholder Search
-st.subheader("🔎 Search Hot Wheels")
 
-st.text_input(
-    "",
-    placeholder="Cari seri Hot Wheels...",
-    label_visibility="collapsed"
+
+# =====================================
+# Dashboard
+# =====================================
+
+render_dashboard()
+
+
+
+st.divider()
+
+
+
+# =====================================
+# Search
+# =====================================
+
+render_search()
+
+
+
+st.divider()
+
+
+
+# =====================================
+# Updates
+# =====================================
+
+render_updates(
+    scan_results
 )
-
-st.divider()
-
-# Placeholder Update
-st.subheader("📢 Update Terbaru")
-
-st.info("Belum ada update.")
