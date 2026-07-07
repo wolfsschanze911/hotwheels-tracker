@@ -17,7 +17,8 @@ from state import (
     start_scan_state,
     finish_scan_state,
     update_state,
-    scan_results
+    scan_results,
+    add_update
 )
 
 
@@ -130,6 +131,28 @@ def process_products(
             "status": status
 
         })
+# ==============================
+# Live Update Feed
+# ==============================
+
+        if status != "➖ Tetap":
+
+            add_update({
+
+                "produk": product_name,
+
+                "toko": store_name,
+
+                "stok": stock,
+
+                "harga": product.get(
+                    "finalPrice",
+                    0
+                ),
+
+                "status": status
+
+            })
 
 
 
