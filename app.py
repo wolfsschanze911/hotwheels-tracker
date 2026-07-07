@@ -18,7 +18,7 @@ st.set_page_config(
 # TITLE
 # ==========================================
 
-st.title("🚗 Hot Wheels Tracker")
+st.title("WOLFSSCHANZE HW PROJECT")
 
 # ==========================================
 # SESSION STATE
