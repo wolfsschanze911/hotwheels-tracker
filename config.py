@@ -1,5 +1,3 @@
-
-
 SPREADSHEET_NAME = "HotWheelsDB"
 WORKSHEET_NAME = "Sheet1"
 
