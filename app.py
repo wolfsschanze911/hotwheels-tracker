@@ -20,11 +20,11 @@ def connect_to_sheets():
 
         client = gspread.authorize(creds)
 
-            return client.open("HotWheelsDB").worksheet("Sheet1")
+        return client.open("HotWheelsDB").worksheet("Sheet1")
 
-            except Exception as e:
+        except Exception as e:
                 st.error(f"Gagal koneksi Google Sheets: {e}")
-            return None
+        return None
         
 # 2. LOAD - Menggunakan list murni, ANTI ERROR
 def load_history():
