@@ -78,9 +78,13 @@ def render_search():
 
 
                 st.markdown(
-                    f"**🏪 {toko['toko']}**"
-                )
-
-                st.caption(
-                    f"📦 {toko['stok']}   •   💰 Rp {harga:,.0f}   •   {toko['status']}"
+                    f"""
+                **🏪 {toko['toko']}**<br>
+                <small>
+                📦 {toko['stok']} &nbsp;&nbsp;•&nbsp;&nbsp;
+                💰 Rp {harga:,.0f} &nbsp;&nbsp;•&nbsp;&nbsp;
+                {toko['status']}
+                </small>
+                """,
+                    unsafe_allow_html=True
                 )
