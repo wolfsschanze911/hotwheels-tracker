@@ -7,6 +7,7 @@ from config import DAFTAR_TOKO
 from history import load_history, save_history
 from scanner import scan_store
 from compare import compare_stock
+from ui import dashboard_card
 
 st.set_page_config(
     page_title="Hot Wheels Tracker",
