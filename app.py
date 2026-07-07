@@ -16,6 +16,14 @@ st.set_page_config(
 
 st.title("🚗 Alfagift Hotwheels Live Tracker")
 
+dashboard_card(
+    total_toko=len(DAFTAR_TOKO),
+    total_produk=0,
+    total_baru=0,
+    total_naik=0,
+    total_turun=0,
+    status="⚪ Belum Scan",
+)
 
 if st.button("SCAN SEMUA TOKO"):
 
@@ -100,5 +108,13 @@ if st.button("SCAN SEMUA TOKO"):
         progress_bar.progress((i + 1) / len(DAFTAR_TOKO))
 
     save_history(history)
+    dashboard_card(
+        total_toko=len(DAFTAR_TOKO),
+        total_produk=total_produk,
+        total_baru=total_baru,
+        total_naik=total_naik,
+        total_turun=total_turun,
+        status="🟢 Scan selesai",
+    )
 
     st.success("✅ Scan selesai! Data stok terbaru telah disimpan.")
