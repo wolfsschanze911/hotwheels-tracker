@@ -37,13 +37,12 @@ def render_scan_button():
     ):
 
 
+        scan_state["running"] = True
+
+
         thread = threading.Thread(
             target=run_scan,
             daemon=True
         )
 
-
         thread.start()
-
-
-        st.rerun()
