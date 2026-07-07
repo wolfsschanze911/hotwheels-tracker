@@ -1,15 +1,16 @@
 from collections import defaultdict
+
 from state import scan_results
 
 
-def search_product(keyword):
+def search(keyword):
 
     keyword = keyword.strip().lower()
 
     if keyword == "":
         return []
 
-    grouped = defaultdict(list)
+    hasil = defaultdict(list)
 
     for item in scan_results:
 
@@ -17,28 +18,33 @@ def search_product(keyword):
 
         if keyword in nama:
 
-            grouped[item["produk"]].append(item)
+            hasil[item["produk"]].append(item)
 
-    results = []
+    response = []
 
-    for produk, toko_list in grouped.items():
+    for produk, toko in hasil.items():
 
-        toko_list.sort(
+        toko.sort(
             key=lambda x: x["stok"],
             reverse=True
         )
 
-        results.append({
+        response.append({
 
             "produk": produk,
 
-            "toko": toko_list
+            "jumlah_toko": len(toko),
+
+            "toko": toko
 
         })
 
-    results.sort(
-        key=lambda x: len(x["toko"]),
+    response.sort(
+
+        key=lambda x: x["jumlah_toko"],
+
         reverse=True
+
     )
 
-    return results
+    return response
