@@ -23,13 +23,19 @@ st.title("WOLFSSCHANZE HW PROJECT")
 # SESSION STATE
 # ==========================================
 
+from datetime import datetime
+
 if "dashboard" not in st.session_state:
+
     st.session_state.dashboard = {
         "status": "⚪ Belum Scan",
-        "total_produk": 0,
+        "last_scan": "-",
+        "scanned": 0,
+        "produk": 0,
         "baru": 0,
         "naik": 0,
         "turun": 0,
+        "progress": 0,
     }
 
 # ==========================================
